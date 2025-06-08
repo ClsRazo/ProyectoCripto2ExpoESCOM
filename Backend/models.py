@@ -7,8 +7,9 @@ class Usuario(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     correo = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
-    rol = db.Column(db.String(20), nullable=False)        # 'condomino' o 'admin'
-    clave_publica = db.Column(db.Text, nullable=False)
+    rol = db.Column(db.String(20), nullable=False)      # 'condomino' o 'admin'
+    clave_publica = db.Column(db.Text, nullable=False)  # PEM en texto
+    is_verified = db.Column(db.Boolean, default=False)  # Indica si ya verificó su correo
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Condominio(db.Model):
@@ -33,9 +34,9 @@ class Documento(db.Model):
     id_emisor = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     id_condominio = db.Column(db.Integer, db.ForeignKey('condominios.id'), nullable=False)
     tipo_documento = db.Column(db.String(50))
-    ruta_archivo_cifrado = db.Column(db.String(300))
-    nonce = db.Column(db.LargeBinary)
-    tag = db.Column(db.LargeBinary)
+    contenido_cifrado = db.Column(db.LargeBinary, nullable=False)  # ciphertext completo
+    nonce = db.Column(db.LargeBinary(12), nullable=False)          # 12 bytes para GCM
+    tag = db.Column(db.LargeBinary(16), nullable=False)            # 16 bytes para GCM
     firma_emisor = db.Column(db.LargeBinary)   # firma del condómino (o admin)
     firma_admin = db.Column(db.LargeBinary)    # firma del admin (solo balances)
     fecha_subida = db.Column(db.DateTime, default=datetime.utcnow)

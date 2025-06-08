@@ -1,8 +1,6 @@
-/Backend/venv
+# /Backend/venv
 
 /Backend/__pycache__
-
-/Backend/migrations
 
 /Backend/routes/__pycache__
 
