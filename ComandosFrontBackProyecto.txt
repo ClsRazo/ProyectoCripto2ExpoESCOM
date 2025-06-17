@@ -21,11 +21,13 @@ $Env:MAIL_USERNAME="equipocriptocm@gmail.com"
 $Env:MAIL_PASSWORD="zeoc egoy cbms oskn"
 $Env:MAIL_DEFAULT_SENDER="equipocriptocm@gmail.com"
 
-$Env:FLASK_APP="app.py"
+-----------$Env:FLASK_APP="app.py"
+$Env:FLASK_APP="app:create_app"
 $Env:FLASK_ENV="development"
+flask run --host=0.0.0.0 --port=5000
 
 ---------PARA EL FRONT-----------
 
 npm install
-npm install axios web-vitals
+npm install axios web-vitals react-router-dom
 npm start
