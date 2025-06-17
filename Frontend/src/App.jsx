@@ -8,21 +8,34 @@ import './App.css';
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CondDashboard from './pages/CondDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import UnirseCondominio from './pages/UnirseCondominio';
 import ProtectedRoute from './components/ProtectedRoute';
+import './styles/global.css';
 
 function AppContent() {
   const { user } = useAuth();
   return (
     <>
-      <Navbar />
+      {/* Solo mostrar Navbar si el usuario está autenticado */}
+      {user && <Navbar />}
+      
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="/unirse"
+          element={
+            <ProtectedRoute role="condomino">
+              <UnirseCondominio />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/condominio/*"
           element={
@@ -49,10 +62,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

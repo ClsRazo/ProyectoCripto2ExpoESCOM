@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Register() {
-  const { registerCondominio } = useAuth();
+  const { register } = useAuth();
 
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
@@ -13,6 +13,7 @@ export default function Register() {
   const [errorMsg, setErrorMsg] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
+  const navigate = useNavigate();
 
   /**
    * Descarga automática de un archivo .pem con la clave privada
@@ -48,7 +49,7 @@ export default function Register() {
 
     try {
       // Llamamos al contexto para registrarnos; esperamos recibir { message, clave_privada, usuario }
-      const data = await registerCondominio({ nombre, correo, password });
+      const data = await register({ nombre, correo, password });
       // console.log('Registro exitoso:', data);
 
       // Si el backend devolvió la clave privada, la descargamos
@@ -71,89 +72,99 @@ export default function Register() {
       setErrorMsg(err.error || 'Error en el servidor al registrar condómino.');
     }
   }
-
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
-      <h2>Registro de Condómino</h2>
-      {errorMsg && <div style={{ color: 'red', marginBottom: 10 }}>{errorMsg}</div>}
+    <div className="container">
+      <div className="card auth-card">
+        <div className="card-header">
+          <h2>Registro de Condómino</h2>
+        </div>
+        <div className="card-body">
+          {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 10 }}>
-          <label>Nombre completo:</label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-            style={{ width: '100%', padding: 8 }}
-          />
-        </div>
-        <div style={{ marginBottom: 10 }}>
-          <label>Correo:</label>
-          <input
-            type="email"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-            required
-            style={{ width: '100%', padding: 8 }}
-          />
-        </div>
-        <div style={{ marginBottom: 10 }}>
-          <label>Contraseña:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: 8 }}
-          />
-        </div>
-        <div style={{ marginBottom: 10 }}>
-          <label>Confirmar contraseña:</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: 8 }}
-          />
-        </div>
-        <button type="submit" style={{ padding: '8px 16px' }}>
-          Registrarme
-        </button>
-      </form>
-
-      {/* Modal sencillo */}
-      {modalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          onClick={() => setModalOpen(false)}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              padding: 20,
-              borderRadius: 8,
-              maxWidth: '90%',
-              whiteSpace: 'pre-wrap'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3>Registro Exitoso</h3>
-            <div style={{ marginTop: 10, marginBottom: 20 }}>{modalContent}</div>
-            <button onClick={() => setModalOpen(false)} style={{ padding: '6px 12px' }}>
-              Cerrar
+          <form onSubmit={handleSubmit} className="form">
+            <div className="form-group">
+              <label htmlFor="nombre">Nombre completo:</label>
+              <input
+                id="nombre"
+                type="text"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
+                className="form-control"
+                placeholder="Ingresa tu nombre completo"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="correo">Correo:</label>
+              <input
+                id="correo"
+                type="email"
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
+                required
+                className="form-control"
+                placeholder="correo@ejemplo.com"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="password">Contraseña:</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="form-control"
+                placeholder="Contraseña segura"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirmar contraseña:</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="form-control"
+                placeholder="Repite tu contraseña"
+              />
+            </div>
+            
+            <button type="submit" className="btn btn-primary btn-full">
+              Registrarme
             </button>
+          </form>
+          
+          <div className="auth-links">
+            <Link to="/login" className="link">¿Ya tienes cuenta? Inicia sesión</Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal */}
+      {modalOpen && (
+        <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Registro Exitoso</h3>
+            </div>
+            <div className="modal-body">
+              <div className="alert alert-success" style={{ whiteSpace: 'pre-wrap' }}>
+                {modalContent}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                onClick={() => { setModalOpen(false); navigate('/login'); }} 
+                className="btn btn-primary"
+              >
+                Ir al Login
+              </button>
+            </div>
           </div>
         </div>
       )}

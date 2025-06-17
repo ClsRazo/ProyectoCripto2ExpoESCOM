@@ -1,16 +1,30 @@
 import React from 'react';
-export default function Sidebar({ title, items, onSelect }) {
+
+export default function Sidebar({ title, items, onSelect, joinAction }) {
   return (
-    <aside style={{ width: 240, background: '#f4f4f4', padding: 20, height: 'calc(100vh - 60px)' }}>
-      <h3>{title}</h3>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {items.map((it) => (
-          <li key={it.id} onClick={() => onSelect(it)} style={{ cursor: 'pointer', margin: '8px 0' }}>
-            {it.nombre}
-          </li>
-        ))}
-      </ul>
-      <button style={{ marginTop: 'auto' }}>➕ Unirse</button>
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <h3>{title}</h3>
+      </div>
+      <nav className="sidebar-nav">
+        <ul className="sidebar-list">
+          {items.map(it => (
+            <li key={it.id} className="sidebar-item">
+              <button 
+                onClick={() => onSelect(it)} 
+                className="sidebar-link"
+              >
+                👤 {it.nombre}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div className="sidebar-footer">
+        <button onClick={joinAction} className="btn btn-secondary btn-full">
+          ➕ Unirse
+        </button>
+      </div>
     </aside>
   );
 }

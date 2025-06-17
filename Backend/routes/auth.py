@@ -71,27 +71,39 @@ def token_required(f):
     def decorated(*args, **kwargs):
         token = None
         # El token debe venir en el header Authorization: Bearer <token>
+        print(f"Headers recibidos: {dict(request.headers)}")  # Debug
         if 'Authorization' in request.headers:
             bearer = request.headers.get('Authorization')
+            print(f"Authorization header: {bearer}")  # Debug
             parts = bearer.split()
             if len(parts) == 2 and parts[0].lower() == 'bearer':
                 token = parts[1]
+                print(f"Token extraído: {token[:20]}...")  # Debug (solo primeros 20 chars)
 
         if not token:
+            print("ERROR: Token faltante")  # Debug
             return jsonify({'error': 'Token faltante'}), 401
 
         try:
             # Decodificar y verificar firma
             data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+            print(f"Token decodificado: {data}")  # Debug
             # data debería contener: { 'sub': id_usuario, 'rol': 'condomino' / 'admin', 'exp': ... }
-            current_user = Usuario.query.get(data['sub'])
+            # Convertir sub de string a int
+            user_id = int(data['sub'])
+            current_user = Usuario.query.get(user_id)
             if current_user is None:
+                print(f"ERROR: Usuario con ID {user_id} no encontrado")  # Debug
                 raise RuntimeError('Usuario no encontrado')
+            print(f"Usuario encontrado: {current_user.nombre}, rol: {current_user.rol}, verificado: {current_user.is_verified}")  # Debug
             if not current_user.is_verified:
+                print("ERROR: Cuenta no verificada")  # Debug
                 return jsonify({'error': 'Cuenta no verificada'}), 403
         except jwt.ExpiredSignatureError:
+            print("ERROR: Token expirado")  # Debug
             return jsonify({'error': 'Token expirado'}), 401
-        except Exception:
+        except Exception as e:
+            print(f"ERROR: Token inválido - {e}")  # Debug
             return jsonify({'error': 'Token inválido'}), 401
 
         # Inyectamos current_user en los argumentos de la función
@@ -220,7 +232,7 @@ def login():
         return jsonify({'error': 'Credenciales inválidas'}), 401
 
     token = jwt.encode({
-        'sub': usuario.id,
+        'sub': str(usuario.id),  # Convertir ID a string
         'rol': usuario.rol,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     }, current_app.config['SECRET_KEY'], algorithm='HS256')
@@ -269,16 +281,16 @@ def register_admin(current_user):
         nombre=nombre,
         correo=correo,
         password_hash=pw_hash,
-        rol='admin',
-        # clave_publica=clave_publica_pem.decode('utf-8'),
+        rol='admin',        # clave_publica=clave_publica_pem.decode('utf-8'),
         clave_publica=clave_publica_pem,
         is_verified=True  # directo verificado
     )
+    
     db.session.add(nuevo)
     db.session.commit()
 
     token = jwt.encode({
-        'sub': nuevo.id,
+        'sub': str(nuevo.id),  # Convertir ID a string
         'rol': nuevo.rol,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     }, current_app.config['SECRET_KEY'], algorithm='HS256')
@@ -294,3 +306,28 @@ def register_admin(current_user):
             'rol': nuevo.rol
         }
     }), 201
+
+#----------Para verificar manualmente a un usuario (útil para admins)----------
+@auth_bp.route('/verificar-usuario-manual/<int:user_id>', methods=['POST'])
+def verificar_usuario_manual(user_id):
+    """
+    Ruta temporal para verificar manualmente a un usuario admin.
+    En producción, esto debería estar protegido o eliminado.
+    """
+    usuario = Usuario.query.get(user_id)
+    if not usuario:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    usuario.is_verified = True
+    db.session.commit()
+    
+    return jsonify({
+        'message': f'Usuario {usuario.nombre} ({usuario.correo}) verificado manualmente',
+        'usuario': {
+            'id': usuario.id,
+            'nombre': usuario.nombre,
+            'correo': usuario.correo,
+            'rol': usuario.rol,
+            'is_verified': usuario.is_verified
+        }
+    }), 200
