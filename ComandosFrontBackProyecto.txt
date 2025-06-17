@@ -1,0 +1,31 @@
+---------Entorno de python---------
+*En la rama de backend
+python3 -m venv venv
+venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+---------FLASK MIGRATE (BD)---------
+flask db init       #Para crear la carpeta de migrations y leer los modelos creados en models.py
+flask db migrate -m "Inicial" #Para generar un archivo de migración
+flask db upgrade    #Ejecuta el archivo para crear las tablas en la BD desde python
+
+flask db migrate -m "Agregar is_verified a Usuario"
+flask db upgrade
+
+flask db migrate -m "Documento: pasar ruta a BLOB contenido_cifrado"
+flask db upgrade
+
+
+---------PARA EL FLASK MAIL----------
+$Env:MAIL_USERNAME="equipocriptocm@gmail.com"
+$Env:MAIL_PASSWORD="zeoc egoy cbms oskn"
+$Env:MAIL_DEFAULT_SENDER="equipocriptocm@gmail.com"
+
+$Env:FLASK_APP="app.py"
+$Env:FLASK_ENV="development"
+
+---------PARA EL FRONT-----------
+
+npm install
+npm install axios web-vitals
+npm start

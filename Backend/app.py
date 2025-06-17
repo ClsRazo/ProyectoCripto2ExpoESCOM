@@ -24,17 +24,20 @@ def create_app():
     #Registro de blueprints
     from routes.auth import auth_bp
     from routes.condominios import condominios_bp
+    from routes.admin import admin_bp
     from routes.documentos import documentos_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(condominios_bp, url_prefix='/api/condominio')
-    app.register_blueprint(documentos_bp, url_prefix='/api/documentos')
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
+    app.register_blueprint(documentos_bp, url_prefix='/api')
 
     return app
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+    # app.run(debug=True)  # Para desarrollo, usar debug=True
 
 
 # from werkzeug.security import generate_password_hash, check_password_hash
@@ -47,42 +50,3 @@ if __name__ == '__main__':
 # app.config['SECRET_KEY'] = 'una_clave_muy_secreta'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://usuario:pass@localhost/condominio'
 # db = SQLAlchemy(app)
-
-# @app.route('/api/condominio/unirse', methods=['POST'])
-# @token_required
-# def unirse_condominio(current_user):
-#     # Solo los condominos pueden unirse por código
-#     if current_user.rol != 'condomino':
-#         return jsonify({'error': 'No autorizado'}), 403
-#     data = request.get_json()
-#     codigo = data.get('codigo_condominio')
-#     condominio = Condominio.query.filter_by(codigo=codigo).first()
-#     if not condominio:
-#         return jsonify({'error': 'Código inválido'}), 404
-#     # Verificar si ya está en ese condominio
-#     if CondominioUsuario.query.filter_by(id_usuario=current_user.id,
-#                                          id_condominio=condominio.id).first():
-#         return jsonify({'message': 'Ya perteneces a este condominio'}), 200
-#     # Agregar relación
-#     relacion = CondominioUsuario(id_usuario=current_user.id,
-#                                  id_condominio=condominio.id,
-#                                  fecha_union=datetime.datetime.utcnow())
-#     db.session.add(relacion)
-#     db.session.commit()
-#     return jsonify({'message': 'Unido al condominio exitosamente'}), 200
-
-# @app.route('/api/admin/crear-condominio', methods=['POST'])
-# @token_required
-# def crear_condominio(current_user):
-#     # current_user debe ser rol 'admin'
-#     if current_user.rol != 'admin':
-#         return jsonify({'error': 'No autorizado'}), 403
-#     data = request.get_json()
-#     nombre = data.get('nombre_condominio')
-#     codigo = generar_codigo_unico()  # función que genera un string único
-#     nuevo = Condominio(nombre=nombre,
-#                        codigo=codigo,
-#                        id_admin=current_user.id)
-#     db.session.add(nuevo)
-#     db.session.commit()
-#     return jsonify({'id_condominio': nuevo.id, 'codigo': codigo}), 201
