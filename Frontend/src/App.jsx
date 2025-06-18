@@ -12,7 +12,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import NavbarNew from './components/NavbarNew';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import CondDashboardNew from './pages/CondDashboardNew';
+import CondDashboard from './pages/CondDashboardClean';
 import AdminDashboard from './pages/AdminDashboard';
 import UnirseCondominio from './pages/UnirseCondominio';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -40,7 +40,7 @@ function AppContent() {
           path="/condominio/*"
           element={
             <ProtectedRoute role="condomino">
-              <CondDashboardNew />
+              <CondDashboard />
             </ProtectedRoute>
           }
         />

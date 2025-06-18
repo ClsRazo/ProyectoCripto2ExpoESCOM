@@ -164,9 +164,9 @@ def listar_comprobantes(current_user, cid, uid):
                 return jsonify({'error': 'No perteneces a este condominio'}), 403
             # Los condóminos solo pueden ver sus propios comprobantes
             if uid != current_user.id:
-                return jsonify({'error': 'Solo puedes ver tus propios comprobantes'}), 403        
-        # Buscar documentos de comprobantes de pago relacionados con el condómino
+                return jsonify({'error': 'Solo puedes ver tus propios comprobantes'}), 403          # Buscar documentos de comprobantes de pago relacionados con el condómino
         # Los comprobantes pueden ser firmados por el admin (nuevo flujo) o por el condómino (flujo anterior)
+        print(f"Buscando comprobantes para condominio {cid}, usuario {uid}")
         docs = Documento.query.filter(
             Documento.id_condominio == cid,
             Documento.tipo_documento == 'comprobante_pago',
@@ -174,6 +174,10 @@ def listar_comprobantes(current_user, cid, uid):
             # (En el nuevo flujo, usaremos el motivo como identificador temporal)
             # Todos los comprobantes de pago en el condominio son visibles
         ).order_by(Documento.fecha_subida.desc()).all()
+        
+        print(f"Documentos encontrados: {len(docs)}")
+        for doc in docs:
+            print(f"Documento ID: {doc.id}, Tipo: {doc.tipo_documento}, Motivo: {doc.motivo}, Firma emisor: {bool(doc.firma_emisor)}, Firma admin: {bool(doc.firma_admin)}")
         
         # Obtener información del condómino
         condomino = Usuario.query.get(uid)
@@ -188,6 +192,8 @@ def listar_comprobantes(current_user, cid, uid):
                 'firmado_por_admin': bool(doc.firma_admin),  # Indicar si fue firmado por admin
                 'tipo_firma': 'Admin' if doc.firma_admin else ('Condómino' if doc.firma_emisor else 'Sin firma')
             })
+        
+        print(f"Comprobantes procesados: {comprobantes}")
         
         return jsonify({
             'condomino': {

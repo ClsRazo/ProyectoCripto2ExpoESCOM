@@ -75,53 +75,94 @@ export default function CondDashboard() {
                 </button>
               </div>
             </div>
-          )}
-        </div>
+          )}        </div>
       </div>
     </div>
   );
+
   return (
-    <div className="dashboard-layout">
-      <Sidebar
-        title={cond?.nombre || 'Sin condominio'}
-        items={cond ? [{ id: cond.admin.id, nombre: cond.admin.nombre }] : []}
-        onSelect={setSelected}
-        joinAction={handleJoin}
-      />
-      <main className="dashboard-main">
-        <div className="container">
+    <div className="condomino-layout">
+      {/* Sidebar izquierda - 20% - Solo con título y botón unirse */}
+      <div className="condomino-sidebar">
+        <div className="sidebar-simple">
+          <div className="sidebar-header">
+            <h3 className="condomino-title">🏠 {cond?.nombre || 'Sin condominio'}</h3>
+          </div>
+          <div className="sidebar-footer">
+            <button onClick={handleJoin} className="btn btn-secondary btn-full">
+              ➕ Unirse
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Área principal derecha - 80% */}
+      <div className="condomino-main">
+        <div className="condomino-content">
           {selected ? (
             <div className="card">
               <div className="card-header">
-                <h2>Detalles de {selected.nombre}</h2>
+                <h2 className="condomino-title">Detalles de {selected.nombre}</h2>
               </div>
               <div className="card-body">
-                <div className="button-group">
+                <div className="admin-buttons-grid">
                   <button onClick={handleViewEstado} className="btn btn-primary">
                     📄 Estado de cuenta
                   </button>
                   <button onClick={handleViewBalance} className="btn btn-primary">
                     📊 Balance general
                   </button>
-                  <button onClick={handleFirmarComp} className="btn btn-success">
-                    ✍️ Firmar comprobante
+                  <button onClick={() => {}} className="btn btn-info">
+                    📋 Ver comprobantes
+                  </button>
+                  <button onClick={() => {}} className="btn btn-success">
+                    ✅ Verificar comprobante
                   </button>
                 </div>
               </div>
-            </div>
-          ) : (
+            </div>          ) : (
             <div className="card">
               <div className="card-header">
-                <h2>🏠 Bienvenido, {user.nombre}</h2>
+                <h2 className="condomino-title">🏠 Bienvenido, {user.nombre}</h2>
               </div>
               <div className="card-body">
                 <p>Has sido autenticado correctamente en tu condominio <strong>{cond?.nombre}</strong>.</p>
-                <p>Selecciona una opción del menú lateral para comenzar.</p>
+                
+                {/* Información del condominio y admin */}
+                <div className="condominio-info">
+                  <div className="info-section">
+                    <h4>👑 Administrador</h4>
+                    <div className="admin-card">
+                      <div className="admin-info">
+                        <span className="admin-name">👤 {cond?.admin?.nombre}</span>
+                        <button 
+                          onClick={() => setSelected(cond?.admin)} 
+                          className="btn btn-outline-primary btn-sm"
+                        >
+                          Ver opciones
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {cond?.miembros && cond.miembros.length > 0 && (
+                    <div className="info-section">
+                      <h4>👥 Miembros del condominio</h4>
+                      <div className="members-list">
+                        {cond.miembros.map(miembro => (
+                          <div key={miembro.id} className="member-card">
+                            <span>👤 {miembro.nombre}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

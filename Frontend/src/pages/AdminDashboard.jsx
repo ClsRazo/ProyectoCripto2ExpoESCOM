@@ -384,50 +384,38 @@ export default function AdminDashboard() {
               fontSize: 'clamp(18px, 4vw, 24px)'
             }}>
               Mis Condominios
-            </h3><button 
-          onClick={() => setShowCreateModal(true)}
-          style={{ 
-            background: 'var(--button-success)', 
-            color: 'white', 
-            border: 'none', 
-            padding: '12px 20px', 
-            borderRadius: '8px', 
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(125, 209, 129, 0.3)'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = 'var(--button-success-hover)';            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.boxShadow = '0 4px 8px rgba(125, 209, 129, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'var(--button-success)';
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 2px 4px rgba(125, 209, 129, 0.3)';
-          }}        >
-          Crear Condominio
-        </button>
+            </h3>            <button 
+              className="btn"
+              onClick={() => setShowCreateModal(true)}
+              style={{
+                background: 'var(--button-success)', 
+                color: 'white',
+                padding: '12px 20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              Crear Condominio
+            </button>
           </div>
         </div>
-        
-        {/* Tabla de condominios con diseño mejorado */}      <div className="responsive-table-container" style={{ 
+          {/* Tabla de condominios con diseño mejorado */}      <div className="responsive-table-container" style={{ 
         backgroundColor: 'var(--bg-secondary)', 
         borderRadius: '12px', 
         boxShadow: '0 4px 20px var(--shadow-light)',
-        overflow: 'hidden',
         border: '1px solid var(--border-color)',
         maxWidth: '1200px',
-        margin: '0 auto'
+        margin: '0 auto',
+        overflowX: 'auto'
       }}>
         <table className="responsive-table" style={{ 
           width: '100%', 
           borderCollapse: 'collapse',
-          backgroundColor: 'transparent'
+          backgroundColor: 'transparent',
+          minWidth: '800px'
         }}>
           <thead>            <tr style={{ 
               backgroundColor: 'var(--header-bg)',
@@ -563,85 +551,45 @@ export default function AdminDashboard() {
                 </td><td style={{
                   padding: '16px 20px',
                   textAlign: 'center'
-                }}>
-                  <div className="button-group" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>                    <button 
+                }}>                  <div className="button-group" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button 
+                      className="btn"
                       onClick={() => {
                         setUploadForm({ ...uploadForm, condominioId: c.id });
                         setShowUploadModal(true);
                       }}
-                      style={{                        background: 'var(--button-success)', 
-                        color: 'white', 
-                        border: 'none', 
-                        padding: '8px 12px', 
-                        borderRadius: '6px', 
-                        cursor: 'pointer',
+                      style={{
+                        background: 'var(--button-success)', 
+                        color: 'white',
                         fontSize: '13px',
-                        fontWeight: '500',
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 2px 4px rgba(125, 209, 129, 0.3)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = 'var(--button-success-hover)';
-                        e.target.style.transform = 'translateY(-1px)';
-                        e.target.style.boxShadow = '0 4px 8px rgba(125, 209, 129, 0.4)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = 'var(--button-success)';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 2px 4px rgba(125, 209, 129, 0.3)';
+                        padding: '8px 12px'
                       }}
                     >
                       📄 Balance
-                    </button><button 
+                    </button>
+                    <button 
+                      className="btn"
                       onClick={() => {
                         setEditForm({ id: c.id, nombre: c.nombre, direccion: c.direccion || '' });
                         setShowEditModal(true);
                       }}
-                      style={{                        background: 'var(--button-success)', 
-                        color: 'white', 
-                        border: 'none', 
-                        padding: '8px 12px', 
-                        borderRadius: '6px', 
-                        cursor: 'pointer',
+                      style={{
+                        background: 'var(--color-secondary)', 
+                        color: 'white',
                         fontSize: '13px',
-                        fontWeight: '500',
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 2px 4px rgba(125, 209, 129, 0.3)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = 'var(--button-success-hover)';
-                        e.target.style.transform = 'translateY(-1px)';
-                        e.target.style.boxShadow = '0 4px 8px rgba(125, 209, 129, 0.4)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = 'var(--button-success)';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 2px 4px rgba(125, 209, 129, 0.3)';
+                        padding: '8px 12px'
                       }}
                     >
                       ✏️ Editar
-                    </button><button 
+                    </button>
+                    <button 
+                      className="btn"
                       onClick={() => handleViewCondominos(c)}
-                      style={{                        background: 'var(--button-success)', 
-                        color: 'white', 
-                        border: 'none', 
-                        padding: '8px 12px', 
-                        borderRadius: '6px', 
-                        cursor: 'pointer',
+                      style={{
+                        background: 'var(--color-secondary)', 
+                        color: 'white',
                         fontSize: '13px',
-                        fontWeight: '500',
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 2px 4px rgba(125, 209, 129, 0.3)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = 'var(--button-success-hover)';
-                        e.target.style.transform = 'translateY(-1px)';
-                        e.target.style.boxShadow = '0 4px 8px rgba(125, 209, 129, 0.4)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = 'var(--button-success)';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 2px 4px rgba(125, 209, 129, 0.3)';
+                        padding: '8px 12px'
                       }}
                     >
                       👥 Ver
@@ -806,10 +754,9 @@ export default function AdminDashboard() {
           <div className="modal-content" style={{ width: '600px', maxHeight: '80%', overflow: 'auto' }}>
             <div className="modal-header">
               <h3 className="modal-title">Condóminos de {selectedCondominio?.nombre}</h3>
-            </div>
-            <div className="modal-body">
-              <div className="modal-table-container">
-                <table className="modal-table">
+            </div>            <div className="modal-body">
+              <div className="responsive-table-container">
+                <table className="responsive-table modal-table">
                   <thead>
                     <tr>
                       <th>Nombre</th>
@@ -828,34 +775,18 @@ export default function AdminDashboard() {
                       condominos.map(condomino => (
                         <tr key={condomino.id}>
                           <td>{condomino.nombre}</td>
-                          <td>{condomino.correo}</td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td>{condomino.correo}</td>                          <td style={{ textAlign: 'center' }}>
                             <button
+                              className="btn"
                               onClick={() => {
                                 setSelectedCondomino(condomino);
                                 setShowCondominoModal(true);
                               }}
                               style={{ 
-                                background: 'var(--color-primary)', 
-                                color: 'white', 
-                                border: 'none', 
-                                padding: '6px 12px', 
-                                borderRadius: '6px', 
-                                cursor: 'pointer',
+                                background: 'var(--color-secondary)', 
+                                color: 'white',
                                 fontSize: '12px',
-                                fontWeight: '500',
-                                transition: 'all 0.2s ease',
-                                boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = 'var(--color-primaryHover)';
-                                e.target.style.transform = 'translateY(-1px)';
-                                e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.4)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = 'var(--color-primary)';
-                                e.target.style.transform = 'translateY(0)';
-                                e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.3)';
+                                padding: '6px 12px'
                               }}
                             >
                               Detalle
@@ -901,8 +832,7 @@ export default function AdminDashboard() {
                   style={{ flex: '1', minWidth: '150px' }}
                 >
                   Ver Estado de Cuenta
-                </button>
-                <button
+                </button>                <button
                   onClick={() => handleFirmarComprobante(selectedCondomino)}
                   className="modal-btn modal-btn-primary"
                   style={{ flex: '1', minWidth: '150px' }}
@@ -1006,68 +936,8 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
-        </div>
-      )}{/* Modal para cargar clave privada del admin */}
-      {showClavePrivadaModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1003
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '8px',
-            width: '400px',
-            maxWidth: '90%'
-          }}>
-            <h3>Clave Privada Requerida</h3>
-            <p>Para descifrar el estado de cuenta, necesitas proporcionar tu clave privada de administrador.</p>
-            
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px' }}>
-                Seleccionar archivo de clave privada (.pem):
-              </label>
-              <input
-                type="file"
-                accept=".pem"
-                onChange={handleClavePrivadaChange}
-                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-              />
-            </div>
-            
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={handleCargarClavePrivada}
-                disabled={!clavePrivadaFile}
-                style={{ 
-                  padding: '8px 16px', 
-                  background: !clavePrivadaFile ? '#6c757d' : '#28a745', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '4px', 
-                  cursor: !clavePrivadaFile ? 'not-allowed' : 'pointer' 
-                }}
-              >
-                Cargar Clave
-              </button>
-              <button
-                onClick={cerrarModales}
-                style={{ padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}      {/* Modal para cargar clave privada del admin */}
+        </div>      )}
+      {/* Modal para cargar clave privada del admin */}
       {showClavePrivadaModal && (
         <div className="modal-overlay">
           <div className="modal-content">

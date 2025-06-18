@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const MiPerfil = ({ isOpen, onClose }) => {
@@ -85,12 +86,11 @@ const MiPerfil = ({ isOpen, onClose }) => {
     setEditMode(false);
     setError('');
   };
-
   if (!isOpen) return null;
 
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content profile-modal">        <div className="modal-header">
+  return ReactDOM.createPortal(
+    <div className="profile-modal-overlay">
+      <div className="profile-modal-content"><div className="modal-header">
           <h2 className="modal-title">Mi Perfil</h2>
         </div>
         
@@ -230,10 +230,10 @@ const MiPerfil = ({ isOpen, onClose }) => {
                 Editar
               </button>
             </>
-          )}
-        </div>
+          )}        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

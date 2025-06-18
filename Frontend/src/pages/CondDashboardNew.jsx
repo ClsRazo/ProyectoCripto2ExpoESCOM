@@ -324,88 +324,134 @@ export default function CondDashboard() {
       URL.revokeObjectURL(currentPdf);
     }
   };
-
   if (loading) {
     return (
-      <div className="dashboard-layout">
-        <div className="loading-container">
-          <div className="loading">Cargando...</div>
+      <div className="condomino-layout">
+        <div className="condomino-sidebar">
+          <div className="sidebar-simple">
+            <div className="sidebar-header">
+              <h3 className="condomino-title">🏠 Cargando...</h3>
+            </div>
+          </div>
+        </div>
+        <div className="condomino-main">
+          <div className="condomino-content">
+            <div className="loading-container">
+              <div className="loading">Cargando dashboard...</div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
-
   return (
-    <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className="sidebar condomino-sidebar">
-        <div className="sidebar-header">
-          <h3>{condominio ? condominio.nombre : 'Sin Condominio'}</h3>
-          {!condominio && (
-            <p className="text-muted">No perteneces a ningún condominio</p>
-          )}
+    <div className="condomino-layout">
+      {/* Sidebar izquierda - 20% - Solo con título y botón unirse */}
+      <div className="condomino-sidebar">
+        <div className="sidebar-simple">
+          <div className="sidebar-header">
+            <h3 className="condomino-title">🏠 {condominio ? condominio.nombre : 'Sin Condominio'}</h3>
+          </div>
+          <div className="sidebar-footer">
+            {!condominio && (
+              <button 
+                className="btn btn-secondary btn-full"
+                onClick={() => setShowJoinModal(true)}
+              >
+                ➕ Unirse a Condominio
+              </button>
+            )}
+          </div>
         </div>
-        
-        <div className="sidebar-content">
-          {condominio ? (
-            <>
-              {/* Admin */}
-              {admin && (
-                <div className="member-section">
-                  <h4>Administrador</h4>
-                  <button
-                    className={`member-item admin-item ${selectedAdmin?.id === admin.id ? 'active' : ''}`}
-                    onClick={() => setSelectedAdmin(admin)}
-                  >
-                    <span className="member-icon">👑</span>
-                    <span className="member-name">{admin.nombre}</span>
+      </div>
+
+      {/* Área principal derecha - 80% */}
+      <div className="condomino-main">
+        <div className="condomino-content">
+          {selectedAdmin ? (
+            <div className="card">
+              <div className="card-header">
+                <h2 className="condomino-title">Detalles de {selectedAdmin.nombre}</h2>
+              </div>
+              <div className="card-body">
+                <div className="admin-buttons-grid">
+                  <button onClick={() => setShowEstadoModal(true)} className="btn btn-primary">
+                    📄 Estado de cuenta
+                  </button>
+                  <button onClick={handleViewBalanceGeneral} className="btn btn-primary">
+                    📊 Balance general
+                  </button>
+                  <button onClick={handleViewComprobantes} className="btn btn-info">
+                    📋 Ver comprobantes
+                  </button>
+                  <button onClick={() => setShowVerificarComprobanteModal(true)} className="btn btn-success">
+                    ✅ Verificar comprobante
                   </button>
                 </div>
-              )}
-              
-              {/* Condóminos */}
-              {condominios.length > 0 && (
-                <div className="member-section">
-                  <h4>Condóminos</h4>
-                  <div className="members-list">
-                    {condominios.map(condomino => (
-                      <div key={condomino.id} className="member-item">
-                        <span className="member-icon">👤</span>
-                        <span className="member-name">{condomino.nombre}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
+              </div>
+            </div>
           ) : (
-            <div className="no-condominio">
-              <p>No estás en ningún condominio</p>
-              <button 
-                className="btn btn-primary"
-                onClick={() => setShowJoinModal(true)}
-              >                Unirse a Condominio
-              </button>
+            <div className="card">
+              <div className="card-header">
+                <h2 className="condomino-title">🏠 Bienvenido, {user.nombre}</h2>
+              </div>
+              <div className="card-body">
+                {condominio ? (
+                  <>
+                    <p>Has sido autenticado correctamente en tu condominio <strong>{condominio.nombre}</strong>.</p>
+                    
+                    {/* Información del condominio y admin */}
+                    <div className="condominio-info">
+                      {admin && (
+                        <div className="info-section">
+                          <h4>👑 Administrador</h4>
+                          <div className="admin-card">
+                            <div className="admin-info">
+                              <span className="admin-name">👤 {admin.nombre}</span>
+                              <button 
+                                onClick={() => setSelectedAdmin(admin)} 
+                                className="btn btn-outline-primary btn-sm"
+                              >
+                                Ver opciones
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {condominios.length > 0 && (
+                        <div className="info-section">
+                          <h4>👥 Miembros del condominio</h4>
+                          <div className="members-list">
+                            {condominios.map(condomino => (
+                              <div key={condomino.id} className="member-card">
+                                <span>👤 {condomino.nombre}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center">
+                    <p>No perteneces a ningún condominio todavía.</p>
+                    <p>Para acceder a las funciones del sistema, primero debes unirte a un condominio.</p>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => setShowJoinModal(true)}
+                    >
+                      Unirse a Condominio
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="dashboard-main">
-        <div className="container">
-          {selectedAdmin ? (            <AdminDetailPanel 
-              admin={selectedAdmin}
-              onViewEstado={() => setShowEstadoModal(true)}
-              onViewBalance={handleViewBalanceGeneral}
-              onViewComprobantes={handleViewComprobantes}
-              onVerificarComprobante={() => setShowVerificarComprobanteModal(true)}
-            />
-          ) : (
-            <WelcomePanel user={user} condominio={condominio} />
-          )}
-        </div>
-      </main>
+      </div>
+    </div>
+  );
 
       {/* Modales */}
       {showJoinModal && (
@@ -633,14 +679,10 @@ export default function CondDashboard() {
         <div className="alert alert-error floating-alert">
           {error}
           <button onClick={() => setError('')} className="alert-close">×</button>
-        </div>
-      )}
+        </div>      )}
     </div>
   );
 }
-
-// Componente para mostrar detalles del admin
-const AdminDetailPanel = ({ admin, onViewEstado, onViewBalance, onViewComprobantes, onVerificarComprobante }) => (
   <div className="admin-detail-panel">
     <div className="admin-info">
       <div className="card">
@@ -797,29 +839,31 @@ const EstadoCuentaModal = ({ privateKeyFile, setPrivateKeyFile, onView, onClose,
   <div className="modal-overlay" onClick={onClose}>
     <div className="modal-content" onClick={e => e.stopPropagation()}>
       <div className="modal-header">
-        <h3>Ver Estado de Cuenta</h3>
-        <button className="modal-close" onClick={onClose}>×</button>
+        <h3 className="modal-title">Ver Estado de Cuenta</h3>
       </div>
       <div className="modal-body">
-        {error && <div className="alert alert-error">{error}</div>}
-        <p>Para descifrar y ver tu estado de cuenta, necesitas proporcionar tu clave privada:</p>
-        <div className="form-group">
-          <label htmlFor="privateKey">Clave Privada (.pem):</label>
+        {error && <div className="error-message" style={{ marginBottom: '16px' }}>{error}</div>}
+        <p style={{ color: 'var(--color-text)', marginBottom: '16px' }}>
+          Para descifrar y ver tu estado de cuenta, necesitas proporcionar tu clave privada:
+        </p>
+        <div className="modal-form-group">
+          <label className="modal-label">Clave Privada (.pem):</label>
           <input
-            id="privateKey"
             type="file"
             accept=".pem"
             onChange={e => setPrivateKeyFile(e.target.files[0])}
-            className="form-control"
+            className="modal-input"
           />
-          <small className="form-text">Selecciona tu archivo de clave privada</small>
+          <small style={{ color: 'var(--color-textSecondary)', fontSize: '12px', display: 'block', marginTop: '4px' }}>
+            Selecciona tu archivo de clave privada
+          </small>
         </div>
       </div>
       <div className="modal-footer">
-        <button className="btn btn-secondary" onClick={onClose}>
-          Cancelar
+        <button className="modal-btn modal-btn-danger" onClick={onClose}>
+          Cerrar
         </button>
-        <button className="btn btn-primary" onClick={onView}>
+        <button className="modal-btn modal-btn-primary" onClick={onView}>
           Descifrar y Ver
         </button>
       </div>
@@ -832,39 +876,40 @@ const ComprobantePagoModal = ({ privateKeyFile, setPrivateKeyFile, comprobantePa
   <div className="modal-overlay" onClick={onClose}>
     <div className="modal-content" onClick={e => e.stopPropagation()}>
       <div className="modal-header">
-        <h3>Firmar Comprobante de Pago</h3>
-        <button className="modal-close" onClick={onClose}>×</button>
+        <h3 className="modal-title">Firmar Comprobante de Pago</h3>
       </div>
       <div className="modal-body">
-        {error && <div className="alert alert-error">{error}</div>}
-        <div className="form-group">
-          <label htmlFor="privateKeyComp">Clave Privada (.pem):</label>
+        {error && <div className="error-message" style={{ marginBottom: '16px' }}>{error}</div>}
+        <div className="modal-form-group">
+          <label className="modal-label">Clave Privada (.pem):</label>
           <input
-            id="privateKeyComp"
             type="file"
             accept=".pem"
             onChange={e => setPrivateKeyFile(e.target.files[0])}
-            className="form-control"
+            className="modal-input"
           />
-          <small className="form-text">Tu archivo de clave privada</small>
+          <small style={{ color: 'var(--color-textSecondary)', fontSize: '12px', display: 'block', marginTop: '4px' }}>
+            Tu archivo de clave privada
+          </small>
         </div>
-        <div className="form-group">
-          <label htmlFor="comprobantePago">Comprobante de Pago (PDF):</label>
+        <div className="modal-form-group">
+          <label className="modal-label">Comprobante de Pago (PDF):</label>
           <input
-            id="comprobantePago"
             type="file"
             accept=".pdf"
             onChange={e => setComprobantePagoFile(e.target.files[0])}
-            className="form-control"
+            className="modal-input"
           />
-          <small className="form-text">El comprobante que deseas firmar</small>
+          <small style={{ color: 'var(--color-textSecondary)', fontSize: '12px', display: 'block', marginTop: '4px' }}>
+            El comprobante que deseas firmar
+          </small>
         </div>
       </div>
       <div className="modal-footer">
-        <button className="btn btn-secondary" onClick={onClose}>
-          Cancelar
+        <button className="modal-btn modal-btn-danger" onClick={onClose}>
+          Cerrar
         </button>
-        <button className="btn btn-success" onClick={onFirmar}>
+        <button className="modal-btn modal-btn-primary" onClick={onFirmar}>
           Firmar y Descargar
         </button>
       </div>

@@ -73,10 +73,16 @@ export const getMiembrosCondominio = async (cid) => {
 // === GESTIÓN DE DOCUMENTOS ===
 export const getEstadoCuenta = async (privateKeyFile) => {
   try {
+    console.log('=== Iniciando getEstadoCuenta ===');
+    console.log('Archivo de clave privada:', privateKeyFile);
+    console.log('Nombre del archivo:', privateKeyFile?.name);
+    console.log('Tipo del archivo:', privateKeyFile?.type);
+    console.log('Tamaño del archivo:', privateKeyFile?.size);
+    
     const formData = new FormData();
     formData.append('clave_privada', privateKeyFile);
     
-    console.log('Enviando solicitud de estado de cuenta...');
+    console.log('FormData creado, enviando solicitud...');
     const response = await axios.post(`${API_BASE}/condomino/estado-cuenta`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -85,6 +91,8 @@ export const getEstadoCuenta = async (privateKeyFile) => {
     });
     
     console.log('Respuesta recibida:', response);
+    console.log('Status:', response.status);
+    console.log('Headers:', response.headers);
     
     // Crear URL del blob para mostrar el PDF
     const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
@@ -95,7 +103,10 @@ export const getEstadoCuenta = async (privateKeyFile) => {
     return { pdfUrl, vigente: true }; // TODO: implementar verificación de vigencia
   } catch (error) {
     console.error('Error en getEstadoCuenta:', error);
-    if (error.response?.status === 404) {
+    console.error('Response data:', error.response?.data);
+    console.error('Response status:', error.response?.status);
+    console.error('Response headers:', error.response?.headers);
+      if (error.response?.status === 404) {
       throw new Error('No se encontró estado de cuenta');
     }
     throw new Error('Error al obtener el estado de cuenta: ' + (error.response?.data?.error || error.message));
