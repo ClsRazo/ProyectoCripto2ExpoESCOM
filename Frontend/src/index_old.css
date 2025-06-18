@@ -1,0 +1,166 @@
+/* Variables CSS para el dashboard - Usando las mismas del ThemeContext */
+:root {
+  /* Usar directamente las variables del ThemeContext sin fallbacks */
+  --bg-primary: var(--color-background);
+  --bg-secondary: var(--color-surface);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-textSecondary);
+  --border-color: var(--color-border);
+  --header-bg: var(--color-surfaceHover);
+  --row-alt-bg: var(--color-surfaceHover);
+  --row-hover-bg: var(--color-primaryHover);
+  --badge-bg: var(--color-borderLight);
+  --badge-text: var(--color-secondary);
+  --code-bg: var(--color-surfaceHover);
+  --code-text: var(--color-text);
+  --button-success: var(--color-secondary);
+  --button-success-hover: var(--color-secondaryHover);
+  --shadow-light: rgba(0,0,0,0.08);
+  --shadow-hover: rgba(0,0,0,0.15);
+}
+
+/* En modo oscuro las sombras deben ser más suaves */
+[data-theme="dark"] {
+  --shadow-light: rgba(0,0,0,0.3);
+  --shadow-hover: rgba(0,0,0,0.4);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Estilos responsivos para la tabla */
+@media (max-width: 768px) {
+  .responsive-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .responsive-table {
+    min-width: 600px;
+  }
+  
+  .responsive-table th,
+  .responsive-table td {
+    padding: 12px 8px !important;
+    font-size: 12px !important;
+  }
+  
+  .button-group {
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+  
+  .button-group button {
+    font-size: 10px !important;
+    padding: 4px 6px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .responsive-table {
+    min-width: 500px;
+  }
+  
+  .responsive-table th,
+  .responsive-table td {
+    padding: 8px 4px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* Estilos adicionales para el dashboard */
+.dashboard-container {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dashboard-title {
+  color: var(--text-primary) !important;
+}
+
+.table-container {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px var(--shadow-light);
+}
+
+.table-header {
+  background-color: var(--header-bg);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.table-row:nth-child(even) {
+  background-color: var(--row-alt-bg);
+}
+
+.table-row:hover {
+  background-color: var(--row-hover-bg) !important;
+}
+
+.badge {
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+}
+
+.code-display {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+  border: 1px solid var(--border-color);
+}
+
+.code-display:hover {
+  background-color: var(--row-hover-bg);
+  box-shadow: 0 4px 12px var(--shadow-hover);
+}
+
+.btn-success {
+  background-color: var(--button-success) !important;
+  border-color: var(--button-success) !important;
+}
+
+.btn-success:hover {
+  background-color: var(--button-success-hover) !important;
+  border-color: var(--button-success-hover) !important;
+}
+
+/* Asegurar que los modales también sigan el tema */
+.modal {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.modal input,
+.modal textarea,
+.modal select {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus {
+  border-color: var(--button-success);
+  box-shadow: 0 0 0 2px rgba(125, 209, 129, 0.2);
+}

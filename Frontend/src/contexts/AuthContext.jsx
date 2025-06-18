@@ -126,6 +126,14 @@ export function AuthProvider({ children }) {
     console.log('Logout realizado, token eliminado');
   };
 
+  // Función para actualizar los datos del usuario
+  const updateUser = (updatedUserData) => {
+    const updatedUser = { ...user, ...updatedUserData };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    console.log('Usuario actualizado:', updatedUser);
+  };
+
   // const value = {
   //   user,
   //   token,
@@ -135,7 +143,7 @@ export function AuthProvider({ children }) {
   //   logout
   // };
   // return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-  return <AuthContext.Provider value={{ user, token, clavePrivada, loading, login, register, logout }}>
+  return <AuthContext.Provider value={{ user, token, clavePrivada, loading, login, register, logout, updateUser }}>
     {children}
   </AuthContext.Provider>;
 }

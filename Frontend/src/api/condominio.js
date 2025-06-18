@@ -1,18 +1,206 @@
 import axios from 'axios';
 
-export const getCondominio = cid => axios.get(`/condominio/${cid}`).then(res => res.data);
+const API_BASE = 'http://localhost:5000/api';
 
-export const unirseCondominio = (cid, file, clavePrivada, codigo) => {
-  const fd = new FormData(); fd.append('codigo_condominio', codigo); fd.append('estado_de_cuenta', file);
-  return axios.post('/condominio/unirse', fd, { headers: { 'X-Private-Key': clavePrivada } }).then(res => res.data);
+// Configurar interceptores para incluir el token automáticamente
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// === FUNCIONES BÁSICAS ===
+export const getCondominio = async (cid) => {
+  const response = await axios.get(`${API_BASE}/condominio/${cid}`);
+  return response.data;
 };
 
-export const getEstadoMeta = cid => axios.get(`/condominio/${cid}/estado`).then(res => res.data);
+// === GESTIÓN DE MEMBRESÍA ===
+export const validateCondominioCode = async (codigo) => {
+  try {
+    const response = await axios.post(`${API_BASE}/condominio/validate-code`, { codigo });
+    return { valid: true, condominio: response.data.condominio };
+  } catch (error) {
+    if (error.response?.status === 400 && error.response?.data?.error === 'Ya perteneces a este condominio') {
+      // Usuario ya pertenece al condominio, retornar como válido pero con flag especial
+      return { valid: true, alreadyMember: true, error: 'Ya perteneces a este condominio' };
+    }
+    return { valid: false, error: error.response?.data?.error || 'Código inválido' };
+  }
+};
 
-export const descifrarEstado = (cid, clavePrivada) =>
-  axios.post(`/condominio/${cid}/estado/descifrar`, null, { headers: { 'X-Private-Key': clavePrivada }, responseType: 'blob' });
+export const unirseCondominio = async (codigo, estadoCuentaFile, privateKeyFile) => {
+  try {
+    // Validar archivos
+    if (!estadoCuentaFile) {
+      throw new Error('Archivo de estado de cuenta requerido');
+    }
+    if (!privateKeyFile) {
+      throw new Error('Archivo de clave privada requerido');
+    }
+    
+    const formData = new FormData();
+    formData.append('codigo_condominio', codigo);
+    formData.append('estado_de_cuenta', estadoCuentaFile);
+    formData.append('clave_privada', privateKeyFile); // Enviar como archivo en lugar de header
+    
+    console.log('Enviando solicitud de unión al condominio...');
+    
+    const response = await axios.post(`${API_BASE}/condominio/unirse`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    console.log('Respuesta exitosa:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error en unirseCondominio:', error);
+    throw error;
+  }
+};
 
-export const actualizarEstado = (cid, file, clavePrivada) => {
-  const fd = new FormData(); fd.append('estado_de_cuenta', file);
-  return axios.post(`/condominio/${cid}/estado/actualizar`, fd, { headers: { 'X-Private-Key': clavePrivada } }).then(res => res.data);
-}; 
+export const getMiembrosCondominio = async (cid) => {
+  const response = await axios.get(`${API_BASE}/condominio/${cid}/miembros`);
+  return response.data;
+};
+
+// === GESTIÓN DE DOCUMENTOS ===
+export const getEstadoCuenta = async (privateKeyFile) => {
+  try {
+    const formData = new FormData();
+    formData.append('clave_privada', privateKeyFile);
+    
+    console.log('Enviando solicitud de estado de cuenta...');
+    const response = await axios.post(`${API_BASE}/condomino/estado-cuenta`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      responseType: 'blob', // Para recibir el PDF
+    });
+    
+    console.log('Respuesta recibida:', response);
+    
+    // Crear URL del blob para mostrar el PDF
+    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    
+    console.log('PDF URL creada:', pdfUrl);
+    
+    return { pdfUrl, vigente: true }; // TODO: implementar verificación de vigencia
+  } catch (error) {
+    console.error('Error en getEstadoCuenta:', error);
+    if (error.response?.status === 404) {
+      throw new Error('No se encontró estado de cuenta');
+    }
+    throw new Error('Error al obtener el estado de cuenta: ' + (error.response?.data?.error || error.message));
+  }
+};
+
+export const actualizarEstadoCuenta = async (estadoCuentaFile, privateKeyFile) => {
+  const formData = new FormData();
+  formData.append('estado_de_cuenta', estadoCuentaFile);
+  formData.append('clave_privada', privateKeyFile);
+  
+  const response = await axios.post(`${API_BASE}/condomino/estado-cuenta/actualizar`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const getBalanceGeneral = async (condominioId) => {
+  try {
+    console.log('Solicitando balance general para condominio:', condominioId);
+    const response = await axios.get(`${API_BASE}/condomino/balance-general/${condominioId}`, {
+      responseType: 'blob',
+    });
+    
+    console.log('Respuesta de balance general recibida:', response);
+    
+    // Crear URL del blob para mostrar el PDF
+    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    
+    console.log('PDF URL del balance general creada:', pdfUrl);
+    
+    return { pdfUrl, firmaValida: true }; // TODO: implementar verificación de firma
+  } catch (error) {
+    console.error('Error en getBalanceGeneral:', error);
+    if (error.response?.status === 404) {
+      throw new Error('No hay balance general disponible');
+    }
+    if (error.response?.status === 403) {
+      throw new Error('No autorizado para ver este condominio');
+    }
+    throw new Error('Error al obtener el balance general: ' + (error.response?.data?.error || error.message));
+  }
+};
+
+// === FIRMA DE COMPROBANTES ===
+export const firmarComprobantePago = async (privateKeyFile, comprobantePagoFile, condominioId) => {
+  const formData = new FormData();
+  formData.append('clave_privada', privateKeyFile);
+  formData.append('comprobante_pago', comprobantePagoFile);
+  formData.append('id_condominio', condominioId.toString());
+  
+  const response = await axios.post(`${API_BASE}/condomino/firmar-comprobante`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    responseType: 'blob', // Para recibir el archivo firmado
+  });
+  
+  return { archivoFirmado: response.data };
+};
+
+// === FUNCIONES DEL PERFIL ===
+export const getPerfilCondomino = async () => {
+  const response = await axios.get(`${API_BASE}/condomino/perfil`);
+  return response.data;
+};
+
+export const actualizarPerfil = async (datosActualizados) => {
+  const response = await axios.put(`${API_BASE}/condomino/perfil`, datosActualizados);
+  return response.data;
+};
+
+// === FUNCIONES DEL PERFIL (adicionales para compatibilidad) ===
+export const getProfile = getPerfilCondomino;
+export const updateProfile = actualizarPerfil;
+
+// === FUNCIONES LEGACY (mantener compatibilidad) ===
+export const getEstadoMeta = async (cid) => {
+  const response = await axios.get(`${API_BASE}/condominio/${cid}/estado`);
+  return response.data;
+};
+
+export const descifrarEstado = async (cid, clavePrivada) => {
+  const response = await axios.post(`${API_BASE}/condominio/${cid}/estado/descifrar`, null, {
+    headers: { 'X-Private-Key': clavePrivada },
+    responseType: 'blob'
+  });
+  return response;
+};
+
+export const actualizarEstado = async (cid, file, clavePrivada) => {
+  const formData = new FormData();
+  formData.append('estado_de_cuenta', file);
+  
+  const response = await axios.post(`${API_BASE}/condominio/${cid}/estado/actualizar`, formData, {
+    headers: { 'X-Private-Key': clavePrivada }
+  });
+  return response.data;
+};
+
+// Agregar función para obtener información del condómino
+export const getCondominoInfo = async () => {
+  const response = await axios.get(`${API_BASE}/condomino/info`);
+  return response.data;
+};

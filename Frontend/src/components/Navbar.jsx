@@ -11,10 +11,10 @@ export default function Navbar() {
   const handleLogout = () => {
     logout();
     navigate('/login');
-  };
-  return (
+  };  return (
     <nav className="navbar">
-      <div className="navbar-brand">🚀 MiAppCondominio</div>
+      <div className="navbar-logo">S.</div>
+      <div className="navbar-brand">Sagitarium</div>
       
       {user && (
         <div className="navbar-user">

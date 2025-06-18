@@ -9,10 +9,10 @@ import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import Navbar from './components/Navbar';
+import NavbarNew from './components/NavbarNew';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import CondDashboard from './pages/CondDashboard';
+import CondDashboardNew from './pages/CondDashboardNew';
 import AdminDashboard from './pages/AdminDashboard';
 import UnirseCondominio from './pages/UnirseCondominio';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -23,7 +23,7 @@ function AppContent() {
   return (
     <>
       {/* Solo mostrar Navbar si el usuario está autenticado */}
-      {user && <Navbar />}
+      {user && <NavbarNew />}
       
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -40,7 +40,7 @@ function AppContent() {
           path="/condominio/*"
           element={
             <ProtectedRoute role="condomino">
-              <CondDashboard />
+              <CondDashboardNew />
             </ProtectedRoute>
           }
         />

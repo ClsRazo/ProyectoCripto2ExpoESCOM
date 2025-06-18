@@ -22,8 +22,14 @@ export const subirBalance = (cid, file, clavePrivada) => {
   return axios.post(`/admin/condominio/${cid}/balance`, fd).then(res => res.data);
 };
 
-export const adminDescifrarEstado = (cid, uid, clavePrivada) =>
-  axios.get(`/admin/condominio/${cid}/condominos/${uid}/estado`, { headers: { 'X-Private-Key': clavePrivada }, responseType: 'blob' });
+export const adminDescifrarEstado = (cid, uid, clavePrivada) => {
+  // Codificar la clave privada en Base64 para enviarla en el header
+  const clavePrivadaBase64 = btoa(clavePrivada);
+  return axios.get(`/admin/condominio/${cid}/condominos/${uid}/estado`, { 
+    headers: { 'X-Private-Key': clavePrivadaBase64 }, 
+    responseType: 'blob' 
+  });
+};
 
 export const listarComprobantes = (cid, uid) =>
   axios.get(`/admin/condominio/${cid}/condominos/${uid}/comprobantes`).then(res => res.data);

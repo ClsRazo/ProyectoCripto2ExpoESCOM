@@ -19,18 +19,18 @@ def create_app():
     mail.init_app(app)
 
     #Habilitamos CORS para permitir peticiones desde el frontend
-    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
-
-    #Registro de blueprints
+    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)    #Registro de blueprints
     from routes.auth import auth_bp
     from routes.condominios import condominios_bp
     from routes.admin import admin_bp
     from routes.documentos import documentos_bp
+    from routes.condomino import condomino_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(condominios_bp, url_prefix='/api/condominio')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(documentos_bp, url_prefix='/api')
+    app.register_blueprint(condomino_bp, url_prefix='/api/condomino')
 
     return app
 

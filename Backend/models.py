@@ -1,6 +1,6 @@
 from datetime import datetime
 from app import db
-from sqlalchemy import dialects
+from sqlalchemy.dialects import mysql
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -44,12 +44,13 @@ class Documento(db.Model):
     id_emisor = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     id_condominio = db.Column(db.Integer, db.ForeignKey('condominios.id'), nullable=False)
     tipo_documento = db.Column(db.String(50), nullable=False)  # 'estado_cuenta', 'balance_general', 'comprobante_pago'
-    contenido_cifrado = db.Column(db.LargeBinary().with_variant(dialects.mysql.LONGBLOB(), 'mysql'), nullable=True)  # ciphertext completo, usar LONGBLOB en MySQL
+    contenido_cifrado = db.Column(db.LargeBinary().with_variant(mysql.LONGBLOB(), 'mysql'), nullable=True)  # ciphertext completo, usar LONGBLOB en MySQL
     # para estado de cuenta cifrado
     nonce = db.Column(db.LargeBinary(12), nullable=True)          # 12 bytes para GCM
     tag = db.Column(db.LargeBinary(16), nullable=True)            # 16 bytes para GCM
     firma_emisor = db.Column(db.LargeBinary, nullable=True)   # firma del condómino (o admin)
     firma_admin = db.Column(db.LargeBinary, nullable=True)    # firma del admin (solo balances)
+    motivo = db.Column(db.String(500), nullable=True)        # motivo del comprobante de pago (solo para tipo 'comprobante_pago')
     fecha_subida = db.Column(db.DateTime, default=datetime.utcnow)
 
     # contenido_cifrado = db.Column(db.LargeBinary, nullable=False)
