@@ -119,7 +119,7 @@ def send_reset_password_email(usuario, token):
     html_body = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
-            <h1 style="color: white; margin: 0;">🏠 Sagitarium</h1>
+            <h1 style="color: white; margin: 0;">Sagitarium</h1>
         </div>
         <div style="padding: 30px; background-color: #f9f9f9;">
             <h2 style="color: #333;">Restablece tu contraseña</h2>
