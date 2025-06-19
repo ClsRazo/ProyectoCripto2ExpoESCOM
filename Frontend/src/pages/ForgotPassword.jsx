@@ -65,10 +65,8 @@ const ForgotPassword = () => {
             <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
           </div>
 
-          <div className="auth-card-body">
-            {message && (
+          <div className="auth-card-body">            {message && (
               <div className="auth-alert auth-alert-success">
-                <span className="success-icon">✅</span>
                 {message}
               </div>
             )}

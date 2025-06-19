@@ -44,13 +44,37 @@ def send_verification_email(usuario, token):
     # URL que el usuario debe abrir para verificar. Podría ser tu frontend,
     # pero acá creamos un endpoint en el backend que luego marque user.is_verified=True.
     verify_url = url_for('auth.verify_email', token=token, _external=True)
-    subject = "Verifica tu cuenta en CondominioApp"
+    subject = "Verifica tu cuenta - Sagitarium"
     html_body = f"""
-    <p>Hola, {usuario.nombre}:</p>
-    <p>Gracias por registrarte. Por favor, haz clic en el siguiente enlace para verificar tu correo:</p>
-    <p><a href="{verify_url}">Verificar mi cuenta</a></p>
-    <br>
-    <p>Si no te registraste, ignora este mensaje.</p>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #7dd181 0%, #5ab866 100%); padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">Sagitarium</h1>
+        </div>
+        <div style="padding: 30px; background-color: #f9f9f9;">
+            <h2 style="color: #333;">Verifica tu cuenta</h2>
+            <p>Hola <strong>{usuario.nombre}</strong>,</p>
+            <p>¡Bienvenido a Sagitarium! Gracias por registrarte en nuestro sistema de gestión condominial.</p>
+            <p>Para completar tu registro y comenzar a usar la plataforma, necesitas verificar tu correo electrónico:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{verify_url}" style="background: linear-gradient(135deg, #7dd181 0%, #5ab866 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                    Verificar mi cuenta
+                </a>
+            </div>
+            
+            <p style="color: #666; font-size: 14px;">
+                Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>
+                <a href="{verify_url}">{verify_url}</a>
+            </p>
+            
+            <p style="color: #666; font-size: 14px;">
+                Si no te registraste en Sagitarium, puedes ignorar este correo de forma segura.
+            </p>
+        </div>
+        <div style="background-color: #eee; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+            © 2025 Sagitarium - Sistema de Gestión Condominial
+        </div>
+    </div>
     """
 
     msg = Message(

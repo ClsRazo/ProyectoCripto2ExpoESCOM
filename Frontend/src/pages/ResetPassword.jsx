@@ -47,7 +47,6 @@ const ResetPassword = () => {
       setVerifying(false);
     }
   }, [token]);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -56,9 +55,23 @@ const ResetPassword = () => {
     }));
   };
 
+  // Validaciones de contraseña (mismas que login/register)
+  const getPasswordValidation = (password) => {
+    return {
+      length: password.length >= 12,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+  };
+
   const validatePassword = () => {
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    const validation = getPasswordValidation(formData.password);
+    const isPasswordValid = Object.values(validation).every(Boolean);
+    
+    if (!isPasswordValid) {
+      setError('La contraseña debe tener al menos 12 caracteres, incluyendo mayúsculas, minúsculas, números y símbolos especiales');
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
@@ -209,7 +222,6 @@ const ResetPassword = () => {
           <div className="auth-card-body">
             {message && (
               <div className="auth-alert auth-alert-success">
-                <span className="success-icon">✅</span>
                 {message}
                 <br />
                 <small>Serás redirigido al login en unos segundos...</small>
@@ -233,7 +245,7 @@ const ResetPassword = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder="Mínimo 12 caracteres, incluye mayúsculas, minúsculas, números y símbolos"
                     required
                     disabled={loading}
                     className="auth-form-input"
