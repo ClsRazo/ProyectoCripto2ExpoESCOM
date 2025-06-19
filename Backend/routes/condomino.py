@@ -478,29 +478,19 @@ def obtener_admin_condominio(condominio_id):
     """Obtiene el admin del condominio"""
     print(f"Buscando admin para condominio ID: {condominio_id}")
     
-    # Buscar todas las asociaciones del condominio
-    asociaciones = CondominioUsuario.query.filter_by(id_condominio=condominio_id).all()
-    print(f"Asociaciones encontradas: {len(asociaciones)}")
-    for asoc in asociaciones:
-        usuario = Usuario.query.get(asoc.id_usuario)
-        print(f"- Usuario ID: {asoc.id_usuario}, Rol: {usuario.rol if usuario else 'No encontrado'}")
+    # Obtener el condominio y su admin directamente
+    condominio = Condominio.query.get(condominio_id)
+    if not condominio:
+        print(f"Condominio {condominio_id} no encontrado")
+        return None
     
-    # Buscar admin específicamente
-    admin = Usuario.query.join(CondominioUsuario).filter(
-        CondominioUsuario.id_condominio == condominio_id,
-        Usuario.rol == 'admin'
-    ).first()
+    print(f"Condominio encontrado: {condominio.nombre}, admin ID: {condominio.id_admin}")
     
-    print(f"Admin encontrado por JOIN: {admin}")
-    
-    # Método alternativo si el JOIN no funciona
-    if not admin:
-        print("Probando método alternativo...")
-        for asoc in asociaciones:
-            usuario = Usuario.query.get(asoc.id_usuario)
-            if usuario and usuario.rol == 'admin':
-                admin = usuario
-                print(f"Admin encontrado por método alternativo: {admin}")
-                break
+    # Obtener el admin directamente por su ID
+    admin = Usuario.query.get(condominio.id_admin)
+    if admin:
+        print(f"Admin encontrado: {admin.nombre} (ID: {admin.id})")
+    else:
+        print(f"Admin con ID {condominio.id_admin} no encontrado")
     
     return admin
