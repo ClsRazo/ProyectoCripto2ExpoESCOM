@@ -28,10 +28,12 @@ def create_app():
     # Habilitamos CORS para permitir peticiones desde el frontend
     # Permitir tanto desarrollo local como producción
     allowed_origins = [
-        "http://localhost:3000",  # Desarrollo local
+        "http://localhost:3000",  # Desarrollo local React
+        "http://localhost:3001",  # Desarrollo local alternativo
         "https://tu-dominio-frontend.com",  # Cambiar por tu dominio de producción
         "https://*.amazonaws.com",  # Para S3/CloudFront
-        "https://*.vercel.app"  # Si usas Vercel como alternativa
+        "https://*.vercel.app",  # Si usas Vercel como alternativa
+        "*"  # Temporalmente para pruebas - cambiar en producción
     ]
     CORS(app, origins=allowed_origins, supports_credentials=True)
     

@@ -1,12 +1,24 @@
 import axios from 'axios';
 
-export const registerCondominio = ({ nombre, correo, password }) =>
-  axios.post('/auth/register-condomino', { nombre, correo, password }).then(res => res.data);
-export const login = ({ correo, password }) =>
-  axios.post('/auth/login', { correo, password }).then(res => res.data);
+// Base URL del backend - cambiar según el entorno
+const API_BASE = process.env.NODE_ENV === 'production' 
+  ? 'http://3.136.236.195:5000/api/auth'  // IP de tu EC2
+  : 'http://localhost:5000/api/auth';     // Desarrollo local
 
-// Base URL del backend (ajusta el puerto si es necesario)
-// const API_BASE = 'http://localhost:5000/api/auth';
+// Configurar axios con la base URL
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
+export const registerCondominio = ({ nombre, correo, password }) =>
+  api.post('/register-condomino', { nombre, correo, password }).then(res => res.data);
+
+export const login = ({ correo, password }) =>
+  api.post('/login', { correo, password }).then(res => res.data);
 
 // export async function registerCondominio({ nombre, correo, password }) {
 //   try {
