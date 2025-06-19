@@ -1,9 +1,16 @@
-# app.py (simplificado)
+# app.py (sencillo)
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_cors import CORS
+import pymysql
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
+import os
+
+# Cargar variables de entorno
+load_dotenv()
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -16,10 +23,17 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    mail.init_app(app)
-
+    mail.init_app(app)  
     #Habilitamos CORS para permitir peticiones desde el frontend
-    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)    #Registro de blueprints
+    # Permitir tanto desarrollo local como producción
+    allowed_origins = [
+        "http://localhost:3000",  # Desarrollo local
+        "https://tu-dominio-frontend.com",  # Cambiar por tu dominio de producción
+        "https://*.amazonaws.com",  # Para S3/CloudFront
+        "https://*.vercel.app"  # Si usas Vercel como alternativa
+    ]
+    CORS(app, origins=allowed_origins, supports_credentials=True)#Registro de blueprints
+    
     from routes.auth import auth_bp
     from routes.condominios import condominios_bp
     from routes.admin import admin_bp
