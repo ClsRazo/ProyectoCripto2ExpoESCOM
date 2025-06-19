@@ -23,8 +23,9 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    mail.init_app(app)  
-    #Habilitamos CORS para permitir peticiones desde el frontend
+    mail.init_app(app)
+    
+    # Habilitamos CORS para permitir peticiones desde el frontend
     # Permitir tanto desarrollo local como producción
     allowed_origins = [
         "http://localhost:3000",  # Desarrollo local
@@ -32,13 +33,23 @@ def create_app():
         "https://*.amazonaws.com",  # Para S3/CloudFront
         "https://*.vercel.app"  # Si usas Vercel como alternativa
     ]
-    CORS(app, origins=allowed_origins, supports_credentials=True)#Registro de blueprints
+    CORS(app, origins=allowed_origins, supports_credentials=True)
     
+    # Registro de blueprints
     from routes.auth import auth_bp
     from routes.condominios import condominios_bp
     from routes.admin import admin_bp
     from routes.documentos import documentos_bp
     from routes.condomino import condomino_bp
+    
+    # Rutas básicas para testing
+    @app.route('/')
+    def home():
+        return {'message': 'Sagitarium API está funcionando correctamente', 'status': 'OK'}
+    
+    @app.route('/api/')
+    def api_home():
+        return {'message': 'API Base - Sagitarium', 'version': '1.0', 'endpoints': ['auth', 'condominio', 'admin', 'documentos', 'condomino']}
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(condominios_bp, url_prefix='/api/condominio')
@@ -53,14 +64,5 @@ if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
     # app.run(debug=True)  # Para desarrollo, usar debug=True
 
-
-# from werkzeug.security import generate_password_hash, check_password_hash
-# import jwt
-# import datetime
-# from functools import wraps
-# from crypto_utils import generar_par_claves_ec, serializar_clave_privada, serializar_clave_publica
-
-# app = Flask(__name__)
-# app.config['SECRET_KEY'] = 'una_clave_muy_secreta'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://usuario:pass@localhost/condominio'
-# db = SQLAlchemy(app)
+# Crear la instancia de la app para Gunicorn
+app = create_app()
