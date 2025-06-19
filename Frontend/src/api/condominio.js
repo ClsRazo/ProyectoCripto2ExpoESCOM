@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-// Base URL del backend - cambiar según el entorno
-const API_BASE = process.env.NODE_ENV === 'production' 
-  ? 'http://3.136.236.195:5000/api'  // IP de tu EC2
-  : 'http://localhost:5000/api';     // Desarrollo local
+// Base URL del backend - usar variable de entorno o forzar a EC2 para pruebas
+const API_BASE = process.env.REACT_APP_API_URL || 'http://3.136.236.195:5000/api';
 
 // Configurar interceptores para incluir el token automáticamente
 axios.interceptors.request.use(

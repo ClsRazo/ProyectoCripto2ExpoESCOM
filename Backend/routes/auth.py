@@ -112,6 +112,20 @@ def token_required(f):
     return decorated
 
 #----------Para registrar un nuevo condomino----------
+@auth_bp.route('/', methods=['GET'])
+def auth_home():
+    """Ruta de prueba para el blueprint de auth"""
+    return {
+        'message': 'Auth API funcionando', 
+        'endpoints': [
+            '/register-condomino',
+            '/login', 
+            '/register-admin',
+            '/verify/<token>',
+            '/verificar-usuario-manual/<user_id>'
+        ]
+    }
+
 @auth_bp.route('/register-condomino', methods=['POST'])
 def register_condomino():
     """
