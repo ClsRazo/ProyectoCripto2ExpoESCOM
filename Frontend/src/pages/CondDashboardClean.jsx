@@ -16,11 +16,16 @@ export default function CondDashboard() {
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [showComprobantesModal, setShowComprobantesModal] = useState(false);
   const [showVerificarComprobanteModal, setShowVerificarComprobanteModal] = useState(false);
-  
-  // Estados para formularios
+    // Estados para formularios
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  
+  // Estados para el proceso de unirse al condominio
+  const [joinStep, setJoinStep] = useState(1); // 1: código, 2: archivos
+  const [validatedCondominio, setValidatedCondominio] = useState(null);
+  const [estadoCuentaFile, setEstadoCuentaFile] = useState(null);
+  const [joinPrivateKeyFile, setJoinPrivateKeyFile] = useState(null);
   
   // Estados para documentos
   const [currentPdf, setCurrentPdf] = useState(null);
@@ -70,21 +75,78 @@ export default function CondDashboard() {
       setLoading(false);
     }
   };
-
   const handleJoinCondominio = async () => {
     try {
       setError('');
-      if (!joinCode.trim()) {
-        setError('Ingresa el código del condominio');
-        return;
-      }
       
-      // Aquí iría la lógica para unirse al condominio
-      console.log('Unirse con código:', joinCode);
-      setShowJoinModal(false);
+      if (joinStep === 1) {
+        // Paso 1: Validar código
+        if (!joinCode.trim()) {
+          setError('Ingresa el código del condominio');
+          return;
+        }
+        
+        console.log('Validando código:', joinCode);
+        const validation = await condominioApi.validateCondominioCode(joinCode);
+        
+        if (validation.valid) {
+          if (validation.alreadyMember) {
+            setError(validation.error);
+            return;
+          }
+          
+          setValidatedCondominio(validation.condominio);
+          setJoinStep(2); // Pasar al paso 2
+          setMessage(`¡Código válido! Condominio: ${validation.condominio.nombre}`);
+        } else {
+          setError(validation.error || 'Código inválido');
+        }
+      } else if (joinStep === 2) {
+        // Paso 2: Subir archivos y completar unión
+        if (!estadoCuentaFile) {
+          setError('Selecciona tu estado de cuenta');
+          return;
+        }
+        if (!joinPrivateKeyFile) {
+          setError('Selecciona tu clave privada');
+          return;
+        }
+        
+        console.log('Completando unión al condominio...');
+        const result = await condominioApi.unirseCondominio(joinCode, estadoCuentaFile, joinPrivateKeyFile);
+        
+        setMessage(result.message || '¡Te has unido exitosamente al condominio!');
+        
+        // Resetear formulario y cerrar modal
+        setTimeout(() => {
+          setShowJoinModal(false);
+          setJoinStep(1);
+          setJoinCode('');
+          setEstadoCuentaFile(null);
+          setJoinPrivateKeyFile(null);
+          setValidatedCondominio(null);
+          setError('');
+          setMessage('');
+            // Recargar datos del condominio
+          loadDashboardData();
+        }, 2000);
+      }
     } catch (err) {
-      setError('Error al unirse al condominio: ' + err.message);
+      console.error('Error al unirse al condominio:', err);
+      setError(err.response?.data?.error || err.message || 'Error al unirse al condominio');
     }
+  };
+
+  // Función para resetear el modal de unirse
+  const resetJoinModal = () => {
+    setShowJoinModal(false);
+    setJoinStep(1);
+    setJoinCode('');
+    setEstadoCuentaFile(null);
+    setJoinPrivateKeyFile(null);
+    setValidatedCondominio(null);
+    setError('');
+    setMessage('');
   };
   const handleViewBalanceGeneral = async () => {
     try {
@@ -358,17 +420,19 @@ export default function CondDashboard() {
                         <em>💡 Da clic en el administrador del menú lateral para ver las opciones disponibles.</em>
                       </p>
                     </div>
-                  </>
-                ) : (
+                  </>                ) : (
                   <div className="text-center">
                     <p>No perteneces a ningún condominio todavía.</p>
                     <p>Para acceder a las funciones del sistema, primero debes unirte a un condominio.</p>
-                    <button 
-                      className="btn btn-primary"
-                      onClick={() => setShowJoinModal(true)}
-                    >
-                      Unirse a Condominio
-                    </button>
+                    <div style={{ marginTop: '32px', display: 'flex', justifyContent: 'center' }}>
+                      <button 
+                        className="btn btn-primary"
+                        onClick={() => setShowJoinModal(true)}
+                        style={{ minWidth: '200px', padding: '12px 24px' }}
+                      >
+                        Unirse a Condominio
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -378,28 +442,158 @@ export default function CondDashboard() {
       </div>      {/* Modal para unirse a condominio */}
       {showJoinModal && (
         <div className="modal-overlay">
-          <div className="modal-content modal-standard">
-            <div className="modal-header">
-              <h3>🏠 Unirse a Condominio</h3>
-            </div>
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Código del Condominio:</label>
-                <input
-                  type="text"
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value)}
-                  placeholder="Ingresa el código del condominio"
-                  className="form-control"
-                />
-              </div>
-              {error && <div className="alert alert-error">{error}</div>}            </div>
-            <div className="modal-footer">
-              <button onClick={() => setShowJoinModal(false)} className="btn btn-danger">
+          <div className="modal-content modal-standard">            <div className="modal-header">
+              <h3>🏠 Unirse a Condominio {joinStep === 2 && `- ${validatedCondominio?.nombre}`}</h3>
+            </div><div className="modal-body">
+              {joinStep === 1 ? (
+                // Paso 1: Validar código
+                <>
+                  <p style={{ marginBottom: '20px', color: 'var(--color-text-secondary)' }}>
+                    Ingresa el código único de tu condominio para unirte. Este código te debe ser proporcionado por tu administrador.
+                  </p>
+                  <div className="form-group">
+                    <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>
+                      Código del Condominio:
+                    </label>
+                    <input
+                      type="text"
+                      value={joinCode}
+                      onChange={(e) => setJoinCode(e.target.value)}
+                      placeholder="Ej: COND-2024-001"
+                      className="form-control"
+                      style={{
+                        padding: '12px 16px',
+                        fontSize: '16px',
+                        border: '2px solid var(--color-border)',
+                        borderRadius: '8px',
+                        backgroundColor: 'var(--color-surface)',
+                        transition: 'all 0.3s ease',
+                        textAlign: 'center',
+                        fontFamily: 'monospace',
+                        letterSpacing: '1px'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--color-secondary)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(125, 209, 129, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'var(--color-border)';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
+                    <small style={{ 
+                      display: 'block', 
+                      marginTop: '8px', 
+                      color: 'var(--color-text-secondary)', 
+                      fontSize: '12px',
+                      textAlign: 'center'
+                    }}>
+                      💡 El código distingue entre mayúsculas y minúsculas
+                    </small>
+                  </div>
+                </>
+              ) : (
+                // Paso 2: Subir archivos
+                <>
+                  <div style={{ 
+                    marginBottom: '20px', 
+                    padding: '12px', 
+                    backgroundColor: 'var(--color-surface)', 
+                    borderRadius: '8px',
+                    border: '1px solid var(--color-secondary)' 
+                  }}>
+                    <p style={{ margin: '0', color: 'var(--color-secondary)', fontWeight: '600' }}>
+                      ✅ Código validado para: {validatedCondominio?.nombre}
+                    </p>
+                  </div>
+                  
+                  <p style={{ marginBottom: '20px', color: 'var(--color-text-secondary)' }}>
+                    Ahora necesitas subir tu estado de cuenta y clave privada para completar el proceso de unión.
+                  </p>
+                  
+                  <div className="form-group">
+                    <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>
+                      Estado de Cuenta (PDF):
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => setEstadoCuentaFile(e.target.files[0])}
+                      className="form-control"
+                      style={{ padding: '8px 12px' }}
+                    />
+                    <small style={{ 
+                      display: 'block', 
+                      marginTop: '4px', 
+                      color: 'var(--color-text-secondary)', 
+                      fontSize: '12px'
+                    }}>
+                      📄 Selecciona tu estado de cuenta en formato PDF
+                    </small>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>
+                      Clave Privada:
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pem,.key,.txt"
+                      onChange={(e) => setJoinPrivateKeyFile(e.target.files[0])}
+                      className="form-control"
+                      style={{ padding: '8px 12px' }}
+                    />
+                    <small style={{ 
+                      display: 'block', 
+                      marginTop: '4px', 
+                      color: 'var(--color-text-secondary)', 
+                      fontSize: '12px'
+                    }}>
+                      🔑 Archivo con tu clave privada (.pem, .key, .txt)
+                    </small>
+                  </div>
+                </>
+              )}
+              
+              {message && (
+                <div style={{ 
+                  marginTop: '16px',
+                  padding: '12px', 
+                  backgroundColor: 'rgba(125, 209, 129, 0.1)', 
+                  border: '1px solid var(--color-secondary)',
+                  borderRadius: '6px',
+                  color: 'var(--color-secondary)'
+                }}>
+                  {message}
+                </div>
+              )}
+              
+              {error && (
+                <div style={{ 
+                  marginTop: '16px',
+                  padding: '12px', 
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                  border: '1px solid var(--color-error)',
+                  borderRadius: '6px',
+                  color: 'var(--color-error)'
+                }}>
+                  {error}
+                </div>
+              )}
+            </div>            <div className="modal-footer">
+              <button onClick={resetJoinModal} className="btn btn-danger">
                 Cerrar
               </button>
+              {joinStep === 2 && (
+                <button 
+                  onClick={() => setJoinStep(1)} 
+                  className="btn btn-secondary"
+                >
+                  ← Volver
+                </button>
+              )}
               <button onClick={handleJoinCondominio} className="btn btn-primary">
-                Validar Código
+                {joinStep === 1 ? 'Validar Código' : 'Completar Unión'}
               </button>
             </div>
           </div>

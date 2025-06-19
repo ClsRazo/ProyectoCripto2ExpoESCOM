@@ -112,7 +112,22 @@ export const getEstadoCuenta = async (privateKeyFile) => {
     console.error('Response data:', error.response?.data);
     console.error('Response status:', error.response?.status);
     console.error('Response headers:', error.response?.headers);
-      if (error.response?.status === 404) {
+    
+    // Si hay un error 500, intentar leer el mensaje de error
+    if (error.response?.status === 500 && error.response?.data) {
+      try {
+        // Si la respuesta es un Blob, convertirla a texto
+        const errorBlob = error.response.data;
+        const errorText = await errorBlob.text();
+        const errorData = JSON.parse(errorText);
+        throw new Error('Error del servidor: ' + (errorData.error || 'Error desconocido'));
+      } catch (parseError) {
+        console.error('No se pudo parsear el error del servidor:', parseError);
+        throw new Error('Error interno del servidor (500)');
+      }
+    }
+    
+    if (error.response?.status === 404) {
       throw new Error('No se encontró estado de cuenta');
     }
     throw new Error('Error al obtener el estado de cuenta: ' + (error.response?.data?.error || error.message));
