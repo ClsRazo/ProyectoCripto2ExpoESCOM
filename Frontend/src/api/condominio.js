@@ -1,10 +1,16 @@
 import axios from 'axios';
+import API_CONFIG from '../config/api';
 
-// Base URL del backend - usar variable de entorno o forzar a EC2 para pruebas
-const API_BASE = process.env.REACT_APP_API_URL || 'http://3.136.236.195:5000/api';
+// Configurar axios con la configuración centralizada
+const api = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
+  withCredentials: API_CONFIG.WITH_CREDENTIALS,
+  headers: API_CONFIG.DEFAULT_HEADERS
+});
 
 // Configurar interceptores para incluir el token automáticamente
-axios.interceptors.request.use(
+api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -17,14 +23,14 @@ axios.interceptors.request.use(
 
 // === FUNCIONES BÁSICAS ===
 export const getCondominio = async (cid) => {
-  const response = await axios.get(`${API_BASE}/condominio/${cid}`);
+  const response = await api.get(`/condominio/${cid}`);
   return response.data;
 };
 
 // === GESTIÓN DE MEMBRESÍA ===
 export const validateCondominioCode = async (codigo) => {
   try {
-    const response = await axios.post(`${API_BASE}/condominio/validate-code`, { codigo });
+    const response = await api.post(`/condominio/validate-code`, { codigo });
     return { valid: true, condominio: response.data.condominio };
   } catch (error) {
     if (error.response?.status === 400 && error.response?.data?.error === 'Ya perteneces a este condominio') {
@@ -51,8 +57,7 @@ export const unirseCondominio = async (codigo, estadoCuentaFile, privateKeyFile)
     formData.append('clave_privada', privateKeyFile); // Enviar como archivo en lugar de header
     
     console.log('Enviando solicitud de unión al condominio...');
-    
-    const response = await axios.post(`${API_BASE}/condominio/unirse`, formData, {
+      const response = await api.post(`/condominio/unirse`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -67,7 +72,7 @@ export const unirseCondominio = async (codigo, estadoCuentaFile, privateKeyFile)
 };
 
 export const getMiembrosCondominio = async (cid) => {
-  const response = await axios.get(`${API_BASE}/condominio/${cid}/miembros`);
+  const response = await api.get(`/condominio/${cid}/miembros`);
   return response.data;
 };
 
@@ -84,7 +89,7 @@ export const getEstadoCuenta = async (privateKeyFile) => {
     formData.append('clave_privada', privateKeyFile);
     
     console.log('FormData creado, enviando solicitud...');
-    const response = await axios.post(`${API_BASE}/condomino/estado-cuenta`, formData, {
+    const response = await api.post(`/condomino/estado-cuenta`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -119,7 +124,7 @@ export const actualizarEstadoCuenta = async (estadoCuentaFile, privateKeyFile) =
   formData.append('estado_de_cuenta', estadoCuentaFile);
   formData.append('clave_privada', privateKeyFile);
   
-  const response = await axios.post(`${API_BASE}/condomino/estado-cuenta/actualizar`, formData, {
+  const response = await api.post(`/condomino/estado-cuenta/actualizar`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -130,7 +135,7 @@ export const actualizarEstadoCuenta = async (estadoCuentaFile, privateKeyFile) =
 export const getBalanceGeneral = async (condominioId) => {
   try {
     console.log('Solicitando balance general para condominio:', condominioId);
-    const response = await axios.get(`${API_BASE}/condomino/balance-general/${condominioId}`, {
+    const response = await api.get(`/condomino/balance-general/${condominioId}`, {
       responseType: 'blob',
     });
     
@@ -162,7 +167,7 @@ export const firmarComprobantePago = async (privateKeyFile, comprobantePagoFile,
   formData.append('comprobante_pago', comprobantePagoFile);
   formData.append('id_condominio', condominioId.toString());
   
-  const response = await axios.post(`${API_BASE}/condomino/firmar-comprobante`, formData, {
+  const response = await api.post(`/condomino/firmar-comprobante`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -174,12 +179,12 @@ export const firmarComprobantePago = async (privateKeyFile, comprobantePagoFile,
 
 // === FUNCIONES DEL PERFIL ===
 export const getPerfilCondomino = async () => {
-  const response = await axios.get(`${API_BASE}/condomino/perfil`);
+  const response = await api.get(`/condomino/perfil`);
   return response.data;
 };
 
 export const actualizarPerfil = async (datosActualizados) => {
-  const response = await axios.put(`${API_BASE}/condomino/perfil`, datosActualizados);
+  const response = await api.put(`/condomino/perfil`, datosActualizados);
   return response.data;
 };
 
@@ -189,12 +194,12 @@ export const updateProfile = actualizarPerfil;
 
 // === FUNCIONES LEGACY (mantener compatibilidad) ===
 export const getEstadoMeta = async (cid) => {
-  const response = await axios.get(`${API_BASE}/condominio/${cid}/estado`);
+  const response = await api.get(`/condominio/${cid}/estado`);
   return response.data;
 };
 
 export const descifrarEstado = async (cid, clavePrivada) => {
-  const response = await axios.post(`${API_BASE}/condominio/${cid}/estado/descifrar`, null, {
+  const response = await api.post(`/condominio/${cid}/estado/descifrar`, null, {
     headers: { 'X-Private-Key': clavePrivada },
     responseType: 'blob'
   });
@@ -205,7 +210,7 @@ export const actualizarEstado = async (cid, file, clavePrivada) => {
   const formData = new FormData();
   formData.append('estado_de_cuenta', file);
   
-  const response = await axios.post(`${API_BASE}/condominio/${cid}/estado/actualizar`, formData, {
+  const response = await api.post(`/condominio/${cid}/estado/actualizar`, formData, {
     headers: { 'X-Private-Key': clavePrivada }
   });
   return response.data;
@@ -213,6 +218,6 @@ export const actualizarEstado = async (cid, file, clavePrivada) => {
 
 // Agregar función para obtener información del condómino
 export const getCondominoInfo = async () => {
-  const response = await axios.get(`${API_BASE}/condomino/info`);
+  const response = await api.get(`/condomino/info`);
   return response.data;
 };

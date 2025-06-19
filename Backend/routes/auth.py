@@ -60,6 +60,81 @@ def send_verification_email(usuario, token):
     )
     mail.send(msg)
 
+#----------Para restablecimiento de contraseña----------
+def generate_reset_token(email):
+    """
+    Genera un token firmado (expirable) para el restablecimiento de contraseña.
+    """
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt='password-reset-salt')
+
+def confirm_reset_token(token, expiration=3600):
+    """
+    Verifica el token de reset de contraseña y devuelve el email si está OK y no expiró.
+    Expiración por defecto: 3600 s = 1 hora
+    """
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(
+            token,
+            salt='password-reset-salt',
+            max_age=expiration
+        )
+    except SignatureExpired:
+        return None  # Token expiró
+    except BadSignature:
+        return None  # Token inválido
+    return email
+
+def send_reset_password_email(usuario, token):
+    """
+    Envía correo de restablecimiento de contraseña con link que apunta al frontend
+    """    # URL del frontend para restablecer contraseña
+    reset_url = f"http://localhost:3000/reset-password/{token}"  # Para desarrollo local
+    subject = "Restablece tu contraseña - Sagitarium"
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">🏠 Sagitarium</h1>
+        </div>
+        <div style="padding: 30px; background-color: #f9f9f9;">
+            <h2 style="color: #333;">Restablece tu contraseña</h2>
+            <p>Hola <strong>{usuario.nombre}</strong>,</p>
+            <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+            <p>Si fuiste tú quien solicitó esto, haz clic en el siguiente botón para establecer una nueva contraseña:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{reset_url}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                    Restablecer Contraseña
+                </a>
+            </div>
+            
+            <p style="color: #666; font-size: 14px;">
+                Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>
+                <a href="{reset_url}">{reset_url}</a>
+            </p>
+            
+            <p style="color: #666; font-size: 14px;">
+                Este enlace expirará en 1 hora por seguridad.
+            </p>
+            
+            <p style="color: #666; font-size: 14px;">
+                Si no solicitaste restablecer tu contraseña, puedes ignorar este correo de forma segura.
+            </p>
+        </div>
+        <div style="background-color: #eee; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+            © 2025 Sagitarium - Sistema de Gestión Condominial
+        </div>
+    </div>
+    """
+
+    msg = Message(
+        subject=subject,
+        recipients=[usuario.correo],
+        html=html_body
+    )
+    mail.send(msg)
+
 #----------Para autenticación y autorización con JWT----------
 def token_required(f):
     """
@@ -345,3 +420,104 @@ def verificar_usuario_manual(user_id):
             'is_verified': usuario.is_verified
         }
     }), 200
+
+#----------Para restablecimiento de contraseña----------
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """
+    Solicita el restablecimiento de contraseña.
+    Envía un email con un token para restablecer la contraseña.
+    """
+    try:
+        data = request.get_json()
+        if not data or 'correo' not in data:
+            return jsonify({'error': 'El correo es requerido'}), 400
+        
+        correo = data['correo'].strip().lower()
+        
+        # Validar formato de correo
+        if '@' not in correo or '.' not in correo:
+            return jsonify({'error': 'Formato de correo inválido'}), 400
+        
+        # Buscar usuario por correo
+        usuario = Usuario.query.filter_by(correo=correo).first()
+        
+        # Siempre retornar éxito por seguridad (no revelar si el email existe)
+        if usuario:
+            # Generar token de reset
+            reset_token = generate_reset_token(correo)
+            
+            # Enviar correo de restablecimiento
+            send_reset_password_email(usuario, reset_token)
+            
+        return jsonify({
+            'message': 'Si el correo existe en nuestro sistema, recibirás un enlace para restablecer tu contraseña.'
+        }), 200
+        
+    except Exception as e:
+        print(f"Error en forgot_password: {e}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """
+    Restablece la contraseña usando el token enviado por correo.
+    """
+    try:
+        data = request.get_json()
+        if not data or 'token' not in data or 'nueva_password' not in data:
+            return jsonify({'error': 'Token y nueva contraseña son requeridos'}), 400
+        
+        token = data['token']
+        nueva_password = data['nueva_password']
+        
+        # Validar contraseña
+        if len(nueva_password) < 6:
+            return jsonify({'error': 'La contraseña debe tener al menos 6 caracteres'}), 400
+        
+        # Verificar token
+        correo = confirm_reset_token(token)
+        if not correo:
+            return jsonify({'error': 'Token inválido o expirado'}), 400
+        
+        # Buscar usuario
+        usuario = Usuario.query.filter_by(correo=correo).first()
+        if not usuario:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
+        
+        # Actualizar contraseña
+        usuario.password_hash = generate_password_hash(nueva_password)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Contraseña restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña.'
+        }), 200
+        
+    except Exception as e:
+        print(f"Error en reset_password: {e}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
+
+@auth_bp.route('/verify-reset-token/<token>', methods=['GET'])
+def verify_reset_token(token):
+    """
+    Verifica si un token de reset es válido (útil para el frontend).
+    """
+    try:
+        correo = confirm_reset_token(token)
+        if not correo:
+            return jsonify({'valid': False, 'error': 'Token inválido o expirado'}), 400
+        
+        # Verificar que el usuario existe
+        usuario = Usuario.query.filter_by(correo=correo).first()
+        if not usuario:
+            return jsonify({'valid': False, 'error': 'Usuario no encontrado'}), 404
+        
+        return jsonify({
+            'valid': True,
+            'correo': correo,
+            'nombre': usuario.nombre
+        }), 200
+        
+    except Exception as e:
+        print(f"Error en verify_reset_token: {e}")
+        return jsonify({'valid': False, 'error': 'Error interno del servidor'}), 500

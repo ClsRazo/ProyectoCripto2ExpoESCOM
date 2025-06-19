@@ -1,12 +1,10 @@
 import axios from 'axios';
+import API_CONFIG from '../config/api';
 
-// Base URL del backend - usar variable de entorno o forzar a EC2 para pruebas
-const API_BASE = process.env.REACT_APP_API_URL || 'http://3.136.236.195:5000/api';
-
-// Configurar axios con la base URL
+// Configurar axios con la configuración centralizada
 const api = axios.create({
-  baseURL: API_BASE,
-  withCredentials: true,
+  baseURL: API_CONFIG.BASE_URL,
+  withCredentials: API_CONFIG.WITH_CREDENTIALS,
 });
 
 export const getBalance = cid =>

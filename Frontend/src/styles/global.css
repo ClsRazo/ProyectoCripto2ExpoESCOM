@@ -3,6 +3,29 @@
   --border-radius: 12px;
   --transition-smooth: all 0.3s ease;
   --font-playfair: 'Playfair Display', serif;
+  
+  /* Variables por defecto (tema claro) */
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surfaceHover: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-borderLight: #cbd5e1;
+  --color-primary: #3b82f6;
+  --color-primaryHover: #2563eb;
+  --color-primaryLight: #dbeafe;
+  --color-secondary: #7dd181;
+  --color-secondaryHover: #65c46e;
+  --color-secondaryLight: #dcfce7;
+  --color-secondaryDark: #5ab866;
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-danger: #ef4444;
+  --color-danger-light: rgba(239, 68, 68, 0.1);
+  --color-warning: #f59e0b;
+  --color-info: #17a2b8;
+  --color-text: #1e293b;
+  --color-textSecondary: #475569;
+  --color-textMuted: #64748b;
 }
 
 * {

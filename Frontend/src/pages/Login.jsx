@@ -146,10 +146,9 @@ export default function Login() {
                 Iniciar Sesión
               </button>
             </form>
-            
-            <div className="auth-links">
+              <div className="auth-links">
               <Link to="/register" className="auth-link">¿Aún no tienes cuenta? Regístrate</Link>
-              <Link to="/forgot" className="auth-link">¿Olvidaste tu contraseña?</Link>
+              <Link to="/forgot-password" className="auth-link">¿Olvidaste tu contraseña?</Link>
             </div>
           </div>
         </div>

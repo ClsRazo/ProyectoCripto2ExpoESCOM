@@ -274,7 +274,7 @@ export default function AdminDashboard() {
       formData.append('id_condominio', selectedCondominio.id);
       formData.append('id_condomino', selectedCondomino.id);
 
-      const response = await fetch('/admin/comprobante/firmar', {
+      const response = await fetch('http://3.136.236.195:5000/api/admin/comprobante/firmar', {
         method: 'POST',
         body: formData,
         headers: {

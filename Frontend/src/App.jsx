@@ -12,6 +12,8 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import NavbarNew from './components/NavbarNew';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import CondDashboard from './pages/CondDashboardClean';
 import AdminDashboard from './pages/AdminDashboard';
 import UnirseCondominio from './pages/UnirseCondominio';
@@ -28,6 +30,8 @@ function AppContent() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route
           path="/unirse"
           element={
