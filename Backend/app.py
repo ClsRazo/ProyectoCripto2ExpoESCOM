@@ -21,6 +21,10 @@ def create_app():
 
     app.config.from_object('config.Config')   # Lee URI de BD, SECRET_KEY, etc.
 
+    # Aplicar configuraciones del engine de SQLAlchemy
+    if hasattr(app.config, 'SQLALCHEMY_ENGINE_OPTIONS'):
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = app.config['SQLALCHEMY_ENGINE_OPTIONS']
+
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
@@ -67,4 +71,5 @@ if __name__ == '__main__':
     # app.run(debug=True)  # Para desarrollo, usar debug=True
 
 # Crear la instancia de la app para Gunicorn
+app = create_app()
 app = create_app()

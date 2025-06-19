@@ -11,10 +11,18 @@ class Config:
         'database': 'sagitarium_db',
         'port': 3306
     }
-    
-    # URI de SQLAlchemy para RDS MySQL
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}"
+      # URI de SQLAlchemy para RDS MySQL con configuraciones de pool
+    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}?charset=utf8mb4"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Configuraciones adicionales para conexiones de BD estables
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 10,
+        'pool_recycle': 120,  # Reciclar conexiones cada 2 minutos
+        'pool_pre_ping': True,  # Verificar conexiones antes de usarlas
+        'pool_timeout': 20,
+        'max_overflow': 0
+    }
 
     # Configuración de Flask-Mail
     MAIL_SERVER = 'smtp.gmail.com'
