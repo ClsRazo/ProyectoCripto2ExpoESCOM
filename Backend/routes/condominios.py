@@ -116,44 +116,134 @@ def estado_metadata(current_user, cid):
 @condominios_bp.route('/<int:cid>/estado/descifrar', methods=['POST'])
 @token_required
 def descifrar_estado(current_user, cid):
-    # descifra y envía PDF
-    doc = Documento.query.filter_by(
-        id_condominio=cid,
-        id_emisor=current_user.id,
-        tipo_documento='estado_cuenta'
-    ).order_by(Documento.fecha_subida.desc()).first_or_404()
-    priv_cond_pem = request.headers.get('X-Private-Key')
-    pub_admin_pem = Usuario.query.get(Documento.query.get(doc.id).condominio.id_admin).clave_publica
-    key = derive_shared_key(priv_cond_pem, pub_admin_pem)
-    pdf = descifrar_aes_gcm(key, doc.nonce, doc.tag, doc.contenido_cifrado)
-    return (pdf, 200, {'Content-Type': 'application/pdf', 'Content-Disposition': f'inline; filename=estado_{cid}.pdf'})
+    try:
+        print(f"[DEBUG] Descifrar estado - Usuario: {current_user.id}, Condominio: {cid}")
+        
+        # Verificar que el usuario pertenece al condominio
+        relacion = CondominioUsuario.query.filter_by(
+            id_condominio=cid,
+            id_usuario=current_user.id
+        ).first()
+        
+        if not relacion:
+            print(f"[ERROR] Usuario {current_user.id} no pertenece al condominio {cid}")
+            return jsonify({'error': 'No perteneces a este condominio'}), 403
+        
+        # Buscar el documento más reciente
+        doc = Documento.query.filter_by(
+            id_condominio=cid,
+            id_emisor=current_user.id,
+            tipo_documento='estado_cuenta'
+        ).order_by(Documento.fecha_subida.desc()).first()
+        
+        if not doc:
+            print(f"[ERROR] No se encontró documento para usuario {current_user.id} en condominio {cid}")
+            return jsonify({'error': 'No se encontró estado de cuenta'}), 404
+        
+        print(f"[DEBUG] Documento encontrado: {doc.id}")
+        
+        # Obtener clave privada del header
+        priv_cond_pem = request.headers.get('X-Private-Key')
+        if not priv_cond_pem:
+            return jsonify({'error': 'Falta clave privada'}), 400
+        
+        # Obtener el condominio y su admin
+        condominio = Condominio.query.get(cid)
+        if not condominio:
+            print(f"[ERROR] Condominio {cid} no encontrado")
+            return jsonify({'error': 'Condominio no encontrado'}), 404
+        
+        print(f"[DEBUG] Condominio encontrado: {condominio.nombre}, Admin ID: {condominio.id_admin}")
+        
+        # Obtener admin
+        admin = Usuario.query.get(condominio.id_admin)
+        if not admin:
+            print(f"[ERROR] Admin {condominio.id_admin} no encontrado")
+            return jsonify({'error': 'Admin del condominio no encontrado'}), 500
+        
+        if not admin.clave_publica:
+            print(f"[ERROR] Admin {admin.id} no tiene clave pública")
+            return jsonify({'error': 'Admin no tiene clave pública configurada'}), 500
+        
+        print(f"[DEBUG] Admin encontrado: {admin.nombre}")
+        
+        # Derivar clave y descifrar
+        key = derive_shared_key(priv_cond_pem, admin.clave_publica)
+        pdf = descifrar_aes_gcm(key, doc.nonce, doc.tag, doc.contenido_cifrado)
+        
+        print(f"[DEBUG] Descifrado exitoso, tamaño PDF: {len(pdf)} bytes")
+        
+        return (pdf, 200, {
+            'Content-Type': 'application/pdf', 
+            'Content-Disposition': f'inline; filename=estado_{cid}.pdf'
+        })
+        
+    except Exception as e:
+        print(f"[ERROR] Error en descifrar_estado: {str(e)}")
+        import traceback
+        print(f"[ERROR] Traceback: {traceback.format_exc()}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 #PARA ACTUALIZAR EL ESTADO DE CUENTA (SOLO CONDOMINO)
 @condominios_bp.route('/<int:cid>/estado/actualizar', methods=['POST'])
 @token_required
 def actualizar_estado(current_user, cid):
-    # mismo flujo que /unirse pero sin crear relación
-    archivo = request.files.get('estado_de_cuenta')
-    if not archivo:
-        return jsonify({'error': 'Falta archivo'}), 400
-    datos = archivo.read()
-    priv_cond_pem = request.headers.get('X-Private-Key')
-    pub_admin_pem = Usuario.query.get(Condominio.query.get(cid).id_admin).clave_publica
-    key = derive_shared_key(priv_cond_pem, pub_admin_pem)
-    nonce, ciphertext, tag = cifrar_aes_gcm(key, datos)
-    signature = firmar_datos(priv_cond_pem, ciphertext)
-    doc = Documento(
-        id_emisor=current_user.id,
-        id_condominio=cid,
-        tipo_documento='estado_cuenta',
-        contenido_cifrado=ciphertext,
-        nonce=nonce,
-        tag=tag,
-        firma_emisor=signature
-    )
-    db.session.add(doc)
-    db.session.commit()
-    return jsonify({'message': 'Estado de cuenta actualizado.', 'id_documento': doc.id}), 201
+    try:
+        print(f"[DEBUG] Actualizar estado - Usuario: {current_user.id}, Condominio: {cid}")
+        
+        # Verificar que el usuario pertenece al condominio
+        relacion = CondominioUsuario.query.filter_by(
+            id_condominio=cid,
+            id_usuario=current_user.id
+        ).first()
+        
+        if not relacion:
+            return jsonify({'error': 'No perteneces a este condominio'}), 403
+        
+        archivo = request.files.get('estado_de_cuenta')
+        if not archivo:
+            return jsonify({'error': 'Falta archivo'}), 400
+        
+        datos = archivo.read()
+        priv_cond_pem = request.headers.get('X-Private-Key')
+        
+        if not priv_cond_pem:
+            return jsonify({'error': 'Falta clave privada'}), 400
+        
+        # Obtener el condominio y su admin
+        condominio = Condominio.query.get(cid)
+        if not condominio:
+            return jsonify({'error': 'Condominio no encontrado'}), 404
+        
+        admin = Usuario.query.get(condominio.id_admin)
+        if not admin or not admin.clave_publica:
+            return jsonify({'error': 'Admin no tiene clave pública configurada'}), 500
+        
+        # Cifrar y firmar
+        key = derive_shared_key(priv_cond_pem, admin.clave_publica)
+        nonce, ciphertext, tag = cifrar_aes_gcm(key, datos)
+        signature = firmar_datos(priv_cond_pem, ciphertext)
+        
+        doc = Documento(
+            id_emisor=current_user.id,
+            id_condominio=cid,
+            tipo_documento='estado_cuenta',
+            contenido_cifrado=ciphertext,
+            nonce=nonce,
+            tag=tag,
+            firma_emisor=signature
+        )
+        db.session.add(doc)
+        db.session.commit()
+        
+        print(f"[DEBUG] Estado actualizado exitosamente, documento ID: {doc.id}")
+        return jsonify({'message': 'Estado de cuenta actualizado.', 'id_documento': doc.id}), 201
+        
+    except Exception as e:
+        print(f"[ERROR] Error en actualizar_estado: {str(e)}")
+        import traceback
+        print(f"[ERROR] Traceback: {traceback.format_exc()}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 #PARA VALIDAR CÓDIGO DE CONDOMINIO
 @condominios_bp.route('/validate-code', methods=['POST'])
