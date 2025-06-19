@@ -37,6 +37,7 @@ class Config:
         "http://localhost:3000",  # Desarrollo local
         "http://127.0.0.1:3000",  # Desarrollo local alternativo
         "http://3.136.236.195",  # Tu EC2 (reemplaza con tu IP pública)
+        "http://sagitarium-frontend.s3-website.us-east-2.amazonaws.com",  # S3 Frontend
         "https://sagitarium.vercel.app",  # Producción Vercel (cambiar cuando tengas el dominio)
         "https://*.amazonaws.com",  # S3/CloudFront
         "https://*.s3.amazonaws.com",  # S3 directo

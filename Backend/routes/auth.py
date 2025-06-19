@@ -114,7 +114,7 @@ def send_reset_password_email(usuario, token):
     """
     Envía correo de restablecimiento de contraseña con link que apunta al frontend
     """    # URL del frontend para restablecer contraseña
-    reset_url = f"http://localhost:3000/reset-password/{token}"  # Para desarrollo local
+    reset_url = f"http://sagitarium-frontend.s3-website.us-east-2.amazonaws.com/reset-password/{token}"
     subject = "Restablece tu contraseña - Sagitarium"
     html_body = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
