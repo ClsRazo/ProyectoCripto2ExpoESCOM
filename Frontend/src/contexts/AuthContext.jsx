@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
   const [clavePrivada, setClavePrivada] = useState(null); // PEM string
   const [loading, setLoading] = useState(true);      // Estado de carga inicial
 
-  axios.defaults.baseURL = "http://3.136.236.195:5000/api";
+  axios.defaults.baseURL = "http://3.135.218.132:5000/api";
 
   // Cargar token del localStorage al inicializar
   useEffect(() => {

@@ -213,7 +213,7 @@ export default function CondDashboard() {
       formData.append('comprobante', archivoVerificar);
       formData.append('id_condomino', user.id);
 
-      const response = await fetch('http://3.136.236.195:5000/api/admin/comprobante/verificar', {
+      const response = await fetch('http://3.135.218.132:5000/api/admin/comprobante/verificar', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

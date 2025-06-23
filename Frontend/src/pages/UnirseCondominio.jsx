@@ -22,7 +22,7 @@ export default function UnirseCondominio() {
     axios.defaults.headers.common['X-Private-Key'] = clavePrivada;
 
     try {
-      const res = await axios.post('http://3.136.236.195:5000/api/condominio/unirse', form);
+      const res = await axios.post('http://3.135.218.132:5000/api/condominio/unirse', form);
       setMsg(res.data.message);
     } catch (err) {
       setMsg(err.response?.data?.error || 'Error al unirse');

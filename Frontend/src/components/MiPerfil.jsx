@@ -23,7 +23,7 @@ const MiPerfil = ({ isOpen, onClose }) => {
       setLoading(true);      const token = localStorage.getItem('token');
       const baseUrl = user?.rol === 'admin' ? '/api/admin' : '/api/condomino';
       
-      const response = await fetch(`http://3.136.236.195:5000${baseUrl}/perfil`, {
+      const response = await fetch(`http://3.135.218.132:5000${baseUrl}/perfil`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -50,7 +50,7 @@ const MiPerfil = ({ isOpen, onClose }) => {
       setLoading(true);      const token = localStorage.getItem('token');
       const baseUrl = user?.rol === 'admin' ? '/api/admin' : '/api/condomino';
       
-      const response = await fetch(`http://3.136.236.195:5000${baseUrl}/perfil`, {
+      const response = await fetch(`http://3.135.218.132:5000${baseUrl}/perfil`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
